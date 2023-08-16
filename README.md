@@ -1,2 +1,2 @@
-# ChatPrompt_Kotlin
-ChatPrompt 프로젝트를 Kotlin으로 refactoring한 프로젝트입니다.
+### WeatherBot
+Slack을 이용한 Weather Bot 만들기 프로젝트
