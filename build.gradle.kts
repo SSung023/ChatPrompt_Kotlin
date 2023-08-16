@@ -28,6 +28,11 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("io.github.microutils:kotlin-logging:3.0.5") // Logging
 
+    // slack
+    implementation("com.slack.api:bolt:1.30.0")
+    implementation("com.slack.api:bolt-servlet:1.30.0")
+    implementation("com.slack.api:bolt-jetty:1.30.0")
+
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("org.mariadb.jdbc:mariadb-java-client")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
