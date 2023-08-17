@@ -28,8 +28,7 @@ replay_pid*
 *.lock
 *.len
 build/kotlin/
+.idea/
 *.keystream
-*.lock
 *.probe
 *.tab
-*.keystream
