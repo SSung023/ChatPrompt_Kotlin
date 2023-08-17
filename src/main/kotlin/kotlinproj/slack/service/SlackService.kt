@@ -1,4 +1,4 @@
-package kotlinproj.slack
+package kotlinproj.slack.service
 
 import com.slack.api.Slack
 import com.slack.api.methods.MethodsClient
