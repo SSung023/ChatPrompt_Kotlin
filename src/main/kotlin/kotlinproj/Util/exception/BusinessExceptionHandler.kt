@@ -13,6 +13,7 @@ class BusinessExceptionHandler {
     @ExceptionHandler(BusinessException::class)
     fun globalBusinessExceptionHandler(e: BusinessException): ResponseEntity<CommonResponse> {
         log.error("[Error]" + e.message);
+        log.error(e.stackTraceToString());
 
         return ResponseEntity.badRequest()
             .body(CommonResponse(e.status, e.message));
