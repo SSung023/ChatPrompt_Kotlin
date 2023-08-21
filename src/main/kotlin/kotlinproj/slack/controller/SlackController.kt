@@ -15,13 +15,13 @@ class SlackController(private val slackService: SlackService) {
 
     // Slack Request URL 검증용
     @PostMapping("/")
-    fun test(@RequestBody req: ValidDto) : String{
+    fun validateURL(@RequestBody req: ValidDto) : String{
         return req.challenge;
     }
 
     // Bot event 발생 시 실행
     @PostMapping("/event")
-    fun getWeather(@RequestBody req: Map<String, Any>) {
+    fun event(@RequestBody req: Map<String, Any>) {
         val eventValue = requireNotNull(req["event"]) {
             throw BusinessException(ErrorCode.DATA_ERROR_NOT_FOUND)
         }

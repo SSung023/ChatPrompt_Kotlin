@@ -1,6 +1,8 @@
 package kotlinproj.slack.service
 
 import kotlinproj.Util.exception.BusinessException
+import kotlinproj.Util.log.Logger
+import kotlinproj.slack.constant.EventType
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
@@ -19,7 +21,7 @@ class SlackServiceTest {
     @DisplayName("webhook 통해 slack 메세지 전송에 성공했을 때에는 에러가 발생하지 않아야 한다.")
     fun shouldNotThrowException_when_sendNormally() {
         //given
-        val eventMap = getEventValue("app_mention", "");
+        val eventMap = getEventValue(EventType.APP_MENTION.type, "");
 
         //when
         slackService.sendMessageByWebhook(eventMap);
@@ -32,7 +34,7 @@ class SlackServiceTest {
     @DisplayName("api를 통해 user의 정보를 받아올 수 있다.")
     fun canExtract_userInfo_ByAPI() {
         //given
-        val eventInfo = getEventValue("app_mention", "") as Map<String, String>;
+        val eventInfo = getEventValue(EventType.APP_MENTION.type, "") as Map<String, String>;
         val user = eventInfo["user"]!!; // ex) U05MVCYDKJL
         
         //when
@@ -58,7 +60,7 @@ class SlackServiceTest {
     @DisplayName("slack event 내용에 인삿말이 있으면 ()님 안녕하세요!를 출력해야 한다.")
     fun should_SayHello_when_IncludeHello() {
         //given
-        val eventValue = getEventValue("app_mention", "안녕");
+        val eventValue = getEventValue(EventType.APP_MENTION.type, "안녕");
 
         //when
         val greeting:String? = slackService.customizeMentionRes(eventValue);
@@ -73,7 +75,7 @@ class SlackServiceTest {
     @DisplayName("slack event 내용에 멘션만 있거나 ()님 안녕하세요!를 출력해야 한다.")
     fun should_SayHello_when_OnlyMention() {
         //given
-        val eventValue = getEventValue("app_mention", "");
+        val eventValue = getEventValue(EventType.APP_MENTION.type, "");
 
         //when
         val greeting:String? = slackService.customizeMentionRes(eventValue);
@@ -88,7 +90,7 @@ class SlackServiceTest {
     @DisplayName("slack event 내용에 인삿말 외에 다른 내용이 있으면 null 반환해야 한다.")
     fun should_not_greeting_when_NoHello() {
         //given
-        val eventValue = getEventValue("app_mention", "다른 말");
+        val eventValue = getEventValue(EventType.APP_MENTION.type, "다른 말");
 
         //when
         val greeting:String? = slackService.customizeMentionRes(eventValue);
@@ -101,8 +103,8 @@ class SlackServiceTest {
     @DisplayName("멘션만 했거나 인삿말이 있을 때엔 true를 반환해야 한다.")
     fun shouldReturnTrue_when_OnlyMention_Or_IncludeGreeting() {
         //given
-        val eventValue1 = getEventValue("app_mention", "");
-        val eventValue2 = getEventValue("app_mention", "뭐하니");
+        val eventValue1 = getEventValue(EventType.APP_MENTION.type, "");
+        val eventValue2 = getEventValue(EventType.APP_MENTION.type, "뭐하니");
         val text1 = eventValue1["text"]!!;
         val text2 = eventValue2["text"]!!;
         
