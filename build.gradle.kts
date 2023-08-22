@@ -33,6 +33,10 @@ dependencies {
     implementation("com.slack.api:bolt-servlet:1.30.0")
     implementation("com.slack.api:bolt-jetty:1.30.0")
 
+    //webflux
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
+
+
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("org.mariadb.jdbc:mariadb-java-client")
     testImplementation("org.springframework.boot:spring-boot-starter-test")

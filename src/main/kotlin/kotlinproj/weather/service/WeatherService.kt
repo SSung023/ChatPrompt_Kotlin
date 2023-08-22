@@ -3,13 +3,13 @@ package kotlinproj.weather.service
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.net.HttpURLConnection
-import java.net.URL
+import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.util.DefaultUriBuilderFactory
+import org.springframework.web.util.UriBuilder
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+
 
 /**
  * @author HeeYeon
@@ -18,40 +18,44 @@ import java.time.format.DateTimeFormatter
  */
 @Service
 @Transactional(readOnly = true)
-class WeatherService {
-
+class WeatherService(private val webBuilder: WebClient.Builder){
     @Value("\${kma.callback-url}")
-    lateinit var url:String;
+    lateinit var BASE_URL:String;
     @Value("\${kma.service-key}")
-    lateinit var serviceKey:String;
+    lateinit var SERVICE_KEY:String;
 
 
     /**
      * 기상청
      * url 변동 사항: base_date, base_time, nx, ny
      */
-    fun searchWeather(): String {
-        val baseDate = getBaseDate();
-        val baseTime = getBaseTime(LocalTime.now());
+    fun getWeatherInfo(): String {
+        val factory = DefaultUriBuilderFactory(BASE_URL)
+            .apply {
+                this.encodingMode = DefaultUriBuilderFactory.EncodingMode.VALUES_ONLY
+            };
 
-        val urlBuilder = getCallbackURL(12, baseDate, baseTime, 60, 126);
+        val webClient = webBuilder
+            .uriBuilderFactory(factory)
+            .baseUrl(BASE_URL)
+            .build();
 
-        val url = URL(urlBuilder);
-        val conn = url.openConnection() as HttpURLConnection;
-        conn.requestMethod= "GET";
-        conn.setRequestProperty("Content-type", "application/json");
+        val response = webClient.get()
+            .uri { uriBuilder: UriBuilder ->
+                uriBuilder
+                    .queryParam("serviceKey", SERVICE_KEY)
+                    .queryParam("dataType", "JSON")
+                    .queryParam("base_date", getBaseDate())
+                    .queryParam("base_time", getBaseTime(LocalTime.now()))
+                    .queryParam("nx", 120)
+                    .queryParam("ny", 60)
+                    .build()
+            }
+            .retrieve()
+            .bodyToMono(String::class.java)
+            .block();
 
-        val rd = BufferedReader(InputStreamReader(conn.inputStream));
-        val sb = java.lang.StringBuilder();
-        var line: String?
-        while (rd.readLine().also { line = it } != null) {
-            sb.append(line);
-        }
-        rd.close();
-        conn.disconnect();
-        val result = sb.toString();
-
-        return result;
+        return response.toString();
     }
 
 
@@ -87,7 +91,7 @@ class WeatherService {
             "500", "600", "700" -> "0500";
             "800", "900", "1000" -> "0800";
             "1100", "1200", "1300" -> "1100";
-            "1400", "1500", "1600", -> "1400";
+            "1400", "1500", "1600" -> "1400";
             "1700", "1800", "1900" -> "1700";
             "2000", "2100", "2200"-> "2000";
             "2300", "2400", "000", "0000", "100"-> "2300";
@@ -95,20 +99,6 @@ class WeatherService {
             else -> {"0000"}
         }
     }
-
-    // 기상청 단기예보 request url 생성
-    fun getCallbackURL(numOfRaws: Int, baseDate: String, baseTime: String, nx: Int, ny: Int): String {
-        val urlBuilder = StringBuilder(url).also {
-            it.append("?serviceKey=$serviceKey")
-                .append("&dataType=JSON")
-                .append("&numOfRaws=$numOfRaws")
-                .append("&pageNo=1")
-                .append("&base_date=$baseDate&base_time=$baseTime")
-                .append("&nx=$nx&ny=$ny")
-        };
-        return urlBuilder.toString();
-    }
-
 
 
 

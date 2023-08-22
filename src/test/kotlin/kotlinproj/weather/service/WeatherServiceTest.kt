@@ -22,9 +22,10 @@ class WeatherServiceTest() {
         //given
 
         //when
-        val searchWeather = weatherService.searchWeather();
+        val searchWeather = weatherService.getWeatherInfo();
 
         //then
+        Logger.log.info { searchWeather }
         assertThatNoException();
     }
 
@@ -60,7 +61,7 @@ class WeatherServiceTest() {
     }
 
     @Test
-    @DisplayName("api callback url을 만들 수 있다.")
+    @DisplayName("api callback uri")
     fun canMake_API_callbackURL() {
         //given
         val numOfRaws = 12;
@@ -70,11 +71,9 @@ class WeatherServiceTest() {
         val ny = 126;
 
         //when
-        val requestURL:String
-            = weatherService.getCallbackURL(numOfRaws, baseDate, baseTime, nx, ny);
 
         //then
-        Logger.log.info { requestURL }
+
     }
 
 
