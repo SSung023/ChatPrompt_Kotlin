@@ -32,7 +32,7 @@ class WeatherService(private val webBuilder: WebClient.Builder){
      * 기상청 Open API를 통해
      * url 변동 사항: base_date, base_time, nx, ny
      */
-    fun getWeatherInfo() : Response{
+    fun requestWeatherAPI() : Response{
         val factory = DefaultUriBuilderFactory(BASE_URL)
             .apply {
                 this.encodingMode = DefaultUriBuilderFactory.EncodingMode.VALUES_ONLY

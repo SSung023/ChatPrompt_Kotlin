@@ -1,6 +1,5 @@
 package kotlinproj.weather.service
 
-import kotlinproj.Util.log.Logger
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatNoException
 import org.junit.jupiter.api.DisplayName
@@ -22,7 +21,7 @@ class WeatherServiceTest() {
         //given
 
         //when
-        val searchWeather = weatherService.getWeatherInfo();
+        val searchWeather = weatherService.requestWeatherAPI();
 
         //then
         val resCode = searchWeather.response.header.resultCode;

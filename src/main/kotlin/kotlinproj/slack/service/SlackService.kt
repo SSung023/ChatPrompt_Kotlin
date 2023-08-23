@@ -59,12 +59,12 @@ class SlackService(private val weatherService: WeatherService) {
         val userId = requireNotNull(eventValue["user"]) {
             throw BusinessException(ErrorCode.DATA_ERROR_NOT_FOUND)
         }
-        val userDisName = getSlackDisplayName(userId);
 
         if (isGreetingCondition(text)) {
+            val userDisName = getSlackDisplayName(userId);
             return "$userDisName" + "님 안녕하세요!";
         } else if( isWeatherAskingCondition(text) ) {
-            return weatherService.getWeatherInfo().response.body.items.toString();
+            return weatherService.requestWeatherAPI().response.body.items.toString();
         } else {
             return "무슨 말인지 잘 모르겠어요😅";
         }
