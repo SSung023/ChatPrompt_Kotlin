@@ -1,5 +1,8 @@
 package kotlinproj.weather.service
 
+import kotlinproj.Util.exception.BusinessException
+import kotlinproj.Util.exception.constants.ErrorCode
+import kotlinproj.weather.dto.kma.Response
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -26,10 +29,10 @@ class WeatherService(private val webBuilder: WebClient.Builder){
 
 
     /**
-     * 기상청
+     * 기상청 Open API를 통해
      * url 변동 사항: base_date, base_time, nx, ny
      */
-    fun getWeatherInfo(): String {
+    fun getWeatherInfo() : Response{
         val factory = DefaultUriBuilderFactory(BASE_URL)
             .apply {
                 this.encodingMode = DefaultUriBuilderFactory.EncodingMode.VALUES_ONLY
@@ -52,10 +55,12 @@ class WeatherService(private val webBuilder: WebClient.Builder){
                     .build()
             }
             .retrieve()
-            .bodyToMono(String::class.java)
+            .bodyToMono(Response::class.java)
             .block();
 
-        return response.toString();
+        return requireNotNull(response) {
+            throw BusinessException(ErrorCode.API_SEND_FAILURE)
+        };
     }
 
 
