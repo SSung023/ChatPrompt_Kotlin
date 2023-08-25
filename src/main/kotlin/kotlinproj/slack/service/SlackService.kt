@@ -10,6 +10,7 @@ import kotlinproj.weather.service.WeatherService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalTime
 
 /**
  * @author HeeYeon
@@ -64,7 +65,7 @@ class SlackService(private val weatherService: WeatherService) {
             val userDisName = getSlackDisplayName(userId);
             return "$userDisName" + "님 안녕하세요!";
         } else if( isWeatherAskingCondition(text) ) {
-            return weatherService.requestWeatherAPI().response.body.items.toString();
+            return weatherService.getWeatherInfo(LocalTime.now()).toString();
         } else {
             return "무슨 말인지 잘 모르겠어요😅";
         }

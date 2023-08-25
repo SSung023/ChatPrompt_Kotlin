@@ -2,6 +2,10 @@ package kotlinproj.weather.service
 
 import kotlinproj.Util.exception.BusinessException
 import kotlinproj.Util.exception.constants.ErrorCode
+import kotlinproj.weather.constant.SkyCode
+import kotlinproj.weather.constant.WeatherCode
+import kotlinproj.weather.dto.WeatherInfoDto
+import kotlinproj.weather.dto.kma.Item
 import kotlinproj.weather.dto.kma.Response
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -28,11 +32,21 @@ class WeatherService(private val webBuilder: WebClient.Builder){
     lateinit var SERVICE_KEY:String;
 
 
+
     /**
-     * 기상청 Open API를 통해
+     * 기상청 Open API를 통해 받은 정보를 바탕으로 특정 시간대의 날씨 정보를 받아옴
+     * @param curTime 기상 정보를 받고 싶은 시간
+     */
+    fun getWeatherInfo(curTime: LocalTime): WeatherInfoDto {
+        val itemList = requestWeatherAPI(curTime).response.body.items.item;
+        return convertResToWeatherDto(itemList);
+    }
+
+    /**
+     * 기상청 Open API를 통해 단기예보 데이터를 가지고 옴
      * url 변동 사항: base_date, base_time, nx, ny
      */
-    fun requestWeatherAPI() : Response{
+    fun requestWeatherAPI(curTime: LocalTime) : Response{
         val factory = DefaultUriBuilderFactory(BASE_URL)
             .apply {
                 this.encodingMode = DefaultUriBuilderFactory.EncodingMode.VALUES_ONLY
@@ -47,9 +61,10 @@ class WeatherService(private val webBuilder: WebClient.Builder){
             .uri { uriBuilder: UriBuilder ->
                 uriBuilder
                     .queryParam("serviceKey", SERVICE_KEY)
+                    .queryParam("numOfRows", 12)
                     .queryParam("dataType", "JSON")
                     .queryParam("base_date", getBaseDate())
-                    .queryParam("base_time", getBaseTime(LocalTime.now()))
+                    .queryParam("base_time", getBaseTime(curTime))
                     .queryParam("nx", 120)
                     .queryParam("ny", 60)
                     .build()
@@ -62,6 +77,27 @@ class WeatherService(private val webBuilder: WebClient.Builder){
             throw BusinessException(ErrorCode.API_SEND_FAILURE)
         };
     }
+
+    /**
+     * @param resList numOfRows를 12로 설정하면 1시간동안의 날씨 정보를 배열로 받을 수 있음
+     * 정보들을 모아서 WeatherInfoDto로 만들어서 반환
+     */
+    fun convertResToWeatherDto(resList: List<Item>): WeatherInfoDto {
+        val associated = resList.associateBy {
+            it.category
+        }
+        val skyCodeNum = associated[WeatherCode.SKY.name]?.fcstValue?.toInt()
+            ?: 0;
+
+        return WeatherInfoDto(
+            temp = associated[WeatherCode.TMP.name]?.fcstValue,
+            humidity = associated[WeatherCode.REH.name]?.fcstValue,
+            rainPossibility = associated[WeatherCode.POP.name]?.fcstValue,
+            rainAmount = associated[WeatherCode.PCP.name]?.fcstValue,
+            sky = getSkyState(skyCodeNum)
+        );
+    }
+
 
 
 
@@ -104,6 +140,18 @@ class WeatherService(private val webBuilder: WebClient.Builder){
             else -> {"0000"}
         }
     }
+
+    /**
+     * Int 형태로 오는 하늘상태 코드를 문자열로 변환
+     * @param skyCode API를 통해 받은 하늘상태 코드
+     */
+    fun getSkyState(skyCode: Int): String {
+        return SkyCode.values().firstOrNull{
+            it.dayNumber == skyCode
+        }?.description
+            ?: throw BusinessException(ErrorCode.DATA_ERROR_NOT_FOUND);
+    }
+
 
 
 
