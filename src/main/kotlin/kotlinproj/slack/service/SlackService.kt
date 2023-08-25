@@ -18,7 +18,9 @@ import java.time.LocalTime
  */
 @Service
 @Transactional(readOnly = true)
-class SlackService(private val weatherService: WeatherService) {
+class SlackService(
+    private val weatherService: WeatherService,
+    ) {
     @Value(value = "\${slack.bot-token}")
     lateinit var botToken:String;
     @Value("\${slack.webhook-url}")
@@ -61,6 +63,7 @@ class SlackService(private val weatherService: WeatherService) {
             throw BusinessException(ErrorCode.DATA_ERROR_NOT_FOUND)
         }
 
+        // TODO: block kit으로 변경
         if (isGreetingCondition(text)) {
             val userDisName = getSlackDisplayName(userId);
             return "$userDisName" + "님 안녕하세요!";

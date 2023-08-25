@@ -30,6 +30,8 @@ class WeatherService(private val webBuilder: WebClient.Builder){
     lateinit var BASE_URL:String;
     @Value("\${kma.service-key}")
     lateinit var SERVICE_KEY:String;
+    private val NUM_OF_ROWS = 10000;
+    private val DATA_TYPE = "JSON";
 
 
 
@@ -61,8 +63,8 @@ class WeatherService(private val webBuilder: WebClient.Builder){
             .uri { uriBuilder: UriBuilder ->
                 uriBuilder
                     .queryParam("serviceKey", SERVICE_KEY)
-                    .queryParam("numOfRows", 12)
-                    .queryParam("dataType", "JSON")
+                    .queryParam("numOfRows", NUM_OF_ROWS)
+                    .queryParam("dataType", DATA_TYPE)
                     .queryParam("base_date", getBaseDate())
                     .queryParam("base_time", getBaseTime(curTime))
                     .queryParam("nx", 120)
