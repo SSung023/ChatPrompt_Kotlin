@@ -6,9 +6,11 @@ import kotlinproj.Util.exception.BusinessException
 import kotlinproj.Util.exception.constants.ErrorCode
 import kotlinproj.Util.log.Logger
 import kotlinproj.slack.constant.EventType
+import kotlinproj.weather.service.WeatherService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalTime
 
 /**
  * @author HeeYeon
@@ -16,19 +18,19 @@ import org.springframework.transaction.annotation.Transactional
  */
 @Service
 @Transactional(readOnly = true)
-class SlackService {
+class SlackService(
+    private val weatherService: WeatherService,
+    ) {
     @Value(value = "\${slack.bot-token}")
     lateinit var botToken:String;
     @Value("\${slack.webhook-url}")
     lateinit var webhookUrl:String;
-    val greetings = listOf("안녕", "하이", "헬로", "반갑", "hello", "Hello");
 
 
     // slack bot의 message 전송
     fun sendMessageByWebhook(eventMap: Map<String, String>){
-        val payload = getPayLoadByType(eventMap);
-
         val slackInst = Slack.getInstance();
+        val payload = getPayloadByType(eventMap);
 
         runCatching {
             slackInst.send(webhookUrl, payload);
@@ -40,30 +42,33 @@ class SlackService {
     }
 
     // Event type에 따라 Slack 메시지 Payload 설정
-    fun getPayLoadByType(eventMap: Map<String, String>) : String{
+    fun getPayloadByType(eventMap: Map<String, String>) : String{
         val eventType = eventMap["type"];
         var payload = "";
 
         when (eventType) {
             EventType.APP_MENTION.type -> {
-                payload = customizeMentionRes(eventMap)
+                payload = customizeMsgByCondition(eventMap)
             };
         }
         return "{\"text\":\"$payload\"}";
     }
 
     // app_mention일 때 조건에 따라서 다른 메세지 전송
-    fun customizeMentionRes(eventValue: Map<String, String>): String {
+    fun customizeMsgByCondition(eventValue: Map<String, String>): String {
         val text = requireNotNull(eventValue["text"]) {
             throw BusinessException(ErrorCode.DATA_ERROR_NOT_FOUND)
         };
         val userId = requireNotNull(eventValue["user"]) {
             throw BusinessException(ErrorCode.DATA_ERROR_NOT_FOUND)
         }
-        val userDisName = getSlackDisplayName(userId);
 
+        // TODO: block kit으로 변경
         if (isGreetingCondition(text)) {
+            val userDisName = getSlackDisplayName(userId);
             return "$userDisName" + "님 안녕하세요!";
+        } else if( isWeatherAskingCondition(text) ) {
+            return weatherService.getWeatherInfo(LocalTime.now()).toString();
         } else {
             return "무슨 말인지 잘 모르겠어요😅";
         }
@@ -94,6 +99,7 @@ class SlackService {
     }
 
     fun isGreetingCondition(text: String): Boolean {
+        val greetings = listOf("안녕", "하이", "헬로", "반갑", "hello", "Hello");
         val split = text.split(" ").filter { it.isNotEmpty() };
 
         if (split.size == 1
@@ -103,6 +109,16 @@ class SlackService {
         else {
             return false;
         }
+    }
+
+    fun isWeatherAskingCondition(text: String): Boolean {
+        val split = text.split(" ").filter { it.isNotEmpty() };
+        val weatherWord = "날씨"
+
+        if (split.any{ it.contains(weatherWord)}) {
+            return true;
+        }
+        return false;
     }
 
 
