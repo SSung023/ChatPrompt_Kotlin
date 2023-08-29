@@ -3,6 +3,7 @@ package kotlinproj.weather.service
 import kotlinproj.Util.exception.BusinessException
 import kotlinproj.Util.exception.constants.ErrorCode
 import kotlinproj.weather.constant.Constants
+import kotlinproj.weather.constant.WeatherCode
 import kotlinproj.weather.domain.DateInfo
 import kotlinproj.weather.domain.Weather
 import kotlinproj.weather.dto.kma.Item
@@ -73,6 +74,7 @@ class ApiService (
      *
      * 문제: fcstDate가 바뀌면 dateInfo 객체도 새로 save 해주어야 함
      */
+    @Transactional
     fun saveWeatherList(weatherInfo: List<Item>) : List<Weather>{
         val weatherList:MutableList<Weather> = mutableListOf()
 
@@ -95,6 +97,12 @@ class ApiService (
                 dateInfo = dateInfoService.saveOne(
                     DateInfo(item.fcstDate, item.baseTime)
                 )
+            }
+            if (item.category == WeatherCode.TMX.name) {
+                dateInfo.updateMaxTemp(item.fcstValue.toDouble())
+            }
+            else if (item.category == WeatherCode.TMN.name) {
+                dateInfo.updateMinTemp(item.fcstValue.toDouble())
             }
             itemList.add(item)
         }

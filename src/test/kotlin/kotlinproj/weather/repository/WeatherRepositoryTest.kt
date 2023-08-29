@@ -28,7 +28,7 @@ class WeatherRepositoryTest {
         val publishDate = DateInfo(
             fcstDate = "20230828", baseTime = "0200")
         val weather = Weather(publishDate,
-            forecastTime = "0300", temperature = 23, humidity = 60,
+            forecastTime = "0300", temperature = 23.0, humidity = 60,
             rainPossible = 30, rainAmt = "1.2", skyState = "1")
 
         //when

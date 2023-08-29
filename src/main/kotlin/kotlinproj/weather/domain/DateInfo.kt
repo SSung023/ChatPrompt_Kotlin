@@ -28,6 +28,13 @@ class DateInfo(fcstDate:String, baseTime:String,
 
 
 
+    //=== 비지니스 코드 ===//
+    fun updateMaxTemp(maxTemp: Double?) {
+        this.maxTemp = maxTemp;
+    }
+    fun updateMinTemp(minTemp: Double?) {
+        this.minTemp = minTemp;
+    }
 
 
     //=== 연관관계 편의 메서드 ===//

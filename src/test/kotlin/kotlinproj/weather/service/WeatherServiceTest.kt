@@ -75,6 +75,23 @@ class WeatherServiceTest() {
         assertThat(weather.temperature).isEqualTo(associated[WeatherCode.TMP.name]?.fcstValue?.toDouble())
         assertThat(weather.skyState).isEqualTo(skyState)
     }
+    @Test
+    @DisplayName("List<Item>에 TMX 혹은 TMN 값이 있다면 dateInfo에 할당해준다.")
+    fun assignTempInfo_When_Exist() {
+        //given
+        val itemList = getItems()
+        val dateInfo = DateInfo("20230829", "1400")
+        val associated = itemList.associateBy {
+            it.category
+        }
+
+        //when
+        weatherService.convertToWeatherEntity(itemList, dateInfo)
+
+        //then
+        assertThat(dateInfo.maxTemp).isEqualTo(associated["TMX"]?.fcstValue?.toDouble())
+        assertThat(dateInfo.minTemp).isEqualTo(associated["TMN"]?.fcstValue?.toDouble())
+    }
 
 
 
@@ -113,7 +130,7 @@ class WeatherServiceTest() {
 
     private fun getSavedDateInfo(): DateInfo {
         return dateInfoRepository.save(
-            DateInfo("20230829", "0200", 28, 21)
+            DateInfo("20230829", "0200", 28.0, 21.0)
         );
     }
 

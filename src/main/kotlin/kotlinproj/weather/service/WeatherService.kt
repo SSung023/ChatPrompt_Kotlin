@@ -65,7 +65,7 @@ class WeatherService(
         val skyCode = associated[WeatherCode.SKY.name]?.fcstValue?.toInt()
             ?: 0;
 
-        val res = Weather(
+        return Weather(
             dateInfo = dateInfo,
             forecastTime = itemList[0].fcstTime,
             temperature = associated[WeatherCode.TMP.name]?.fcstValue?.toDouble() ?: 0.0,
@@ -74,7 +74,6 @@ class WeatherService(
             rainAmt =  associated[WeatherCode.PCP.name]?.fcstValue ?: "0",
             skyState = getSkyState(skyCode)
         )
-        return res
     }
 
     /**
