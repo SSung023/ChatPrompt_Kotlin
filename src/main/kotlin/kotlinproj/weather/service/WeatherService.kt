@@ -29,21 +29,17 @@ import java.time.format.DateTimeFormatter
  */
 @Service
 @Transactional(readOnly = true)
-class WeatherService(private val webBuilder: WebClient.Builder,
-    private val weatherRepository: WeatherRepository){
-    @Value("\${kma.callback-url}")
-    lateinit var BASE_URL:String;
-    @Value("\${kma.service-key}")
-    lateinit var SERVICE_KEY:String;
-
+class WeatherService(
+    private val weatherRepository: WeatherRepository
+){
 
 
     /**
      * 기상청 Open API를 통해 받은 정보를 바탕으로 fcstTime 기준으로 WeatherInfoDto 생성
      */
-    fun getWeatherInfo(weatherInfo: List<Item>): List<WeatherInfoDto> {
+    fun getWeatherInfo(weatherInfo: List<Item>) {
         val dateList:MutableList<DateInfo> = mutableListOf()
-        val weatherList:MutableList<WeatherInfoDto> = mutableListOf()
+        val weatherList:MutableList<Weather> = mutableListOf()
 
         var fcstTime = weatherInfo[0].fcstTime;
         for (item in weatherInfo) {
@@ -60,7 +56,6 @@ class WeatherService(private val webBuilder: WebClient.Builder,
                 fcstTime = item.fcstTime
             }
         }
-        return weatherList
     }
 
     /**
@@ -73,41 +68,7 @@ class WeatherService(private val webBuilder: WebClient.Builder,
 
     }
 
-    /**
-     * 기상청 Open API를 통해 단기예보 데이터를 가지고 옴
-     * url 변동 사항: base_date, base_time, nx, ny
-     */
-    fun requestWeatherAPI(curTime: LocalTime, numOfRaws: Number) : Response{
-        val factory = DefaultUriBuilderFactory(BASE_URL)
-            .apply {
-                this.encodingMode = DefaultUriBuilderFactory.EncodingMode.VALUES_ONLY
-            };
 
-        val webClient = webBuilder
-            .uriBuilderFactory(factory)
-            .baseUrl(BASE_URL)
-            .build();
-
-        val response = webClient.get()
-            .uri { uriBuilder: UriBuilder ->
-                uriBuilder
-                    .queryParam("serviceKey", SERVICE_KEY)
-                    .queryParam("numOfRows", numOfRaws)
-                    .queryParam("dataType", DATA_TYPE)
-                    .queryParam("base_date", getBaseDate())
-                    .queryParam("base_time", getBaseTime(curTime))
-                    .queryParam("nx", 120)
-                    .queryParam("ny", 60)
-                    .build()
-            }
-            .retrieve()
-            .bodyToMono(Response::class.java)
-            .block();
-
-        return requireNotNull(response) {
-            throw BusinessException(ErrorCode.API_SEND_FAILURE)
-        };
-    }
 
 
 
@@ -152,49 +113,6 @@ class WeatherService(private val webBuilder: WebClient.Builder,
             rainfall =  associated[WeatherCode.PCP.name]?.fcstValue?: "0",
             skyState = getSkyState(skyCode)
         )
-    }
-
-
-
-
-
-    /**
-     * request url에 들어갈 base_date를 구함
-     * -> 현재의 날짜를 yyyyMMdd 형식으로 바꾸는 코드
-     */
-    fun getBaseDate(): String {
-        val curTime = LocalDateTime.now()
-        val formatter = DateTimeFormatter.ofPattern("yyyyMMdd")
-        return curTime.format(formatter);
-    }
-
-    /**
-     * request url에 들어갈 base_time을 구함
-     * -> 현재 시간에서 30분을 뺀 후, 범위에 맞는 base_time을 구한 후 반환
-     */
-    fun getBaseTime(curTime:LocalTime): String {
-        val hours = curTime.hour;
-        val minutes = curTime.minute;
-        var convertedHour = "";
-
-        if (minutes < 30) {
-            convertedHour = (hours - 1).toString() + "00";
-        }else{
-            convertedHour = hours.toString() + "00";
-        }
-
-        return when(convertedHour){
-            "200", "300", "400" -> "0200";
-            "500", "600", "700" -> "0500";
-            "800", "900", "1000" -> "0800";
-            "1100", "1200", "1300" -> "1100";
-            "1400", "1500", "1600" -> "1400";
-            "1700", "1800", "1900" -> "1700";
-            "2000", "2100", "2200"-> "2000";
-            "2300", "2400", "000", "0000", "100"-> "2300";
-
-            else -> {"0000"}
-        }
     }
 
     /**

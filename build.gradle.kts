@@ -37,7 +37,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webflux")
 
     // jackson configuration
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-hibernate5:2.9.8")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-hibernate5-jakarta")
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("org.mariadb.jdbc:mariadb-java-client")

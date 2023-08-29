@@ -6,11 +6,10 @@ import kotlinproj.Util.exception.BusinessException
 import kotlinproj.Util.exception.constants.ErrorCode
 import kotlinproj.Util.log.Logger
 import kotlinproj.slack.constant.EventType
-import kotlinproj.weather.service.WeatherService
+import kotlinproj.weather.service.ApiService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.LocalTime
 
 /**
  * @author HeeYeon
@@ -19,7 +18,7 @@ import java.time.LocalTime
 @Service
 @Transactional(readOnly = true)
 class SlackService(
-    private val weatherService: WeatherService,
+    private val apiService: ApiService
     ) {
     @Value(value = "\${slack.bot-token}")
     lateinit var botToken:String;
@@ -68,7 +67,7 @@ class SlackService(
             val userDisName = getSlackDisplayName(userId)
             return "$userDisName" + "님 안녕하세요!"
         } else if( isWeatherAskingCondition(text) ) {
-//            return weatherService.getWeatherInfo(LocalTime.now(), 12).toString();
+//            return apiService.getWeatherInfo(LocalTime.now(), 12).toString();
             return "날씨 정보!"
         } else {
             return "무슨 말인지 잘 모르겠어요😅"

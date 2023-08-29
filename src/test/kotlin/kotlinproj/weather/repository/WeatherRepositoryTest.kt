@@ -21,19 +21,6 @@ class WeatherRepositoryTest {
     @Autowired
     private lateinit var dateInfoRepository: DateInfoRepository
 
-    @BeforeEach
-    fun setup(){
-        //given
-        val publishDate = DateInfo(
-            baseDate = "20230828", baseTime = "0200")
-        val weather = Weather(publishDate,
-            forecastTime = "0300", temperature = "23", humidity = 60,
-            rainPossible = 30, rainfall = "1.2", skyState = "1")
-
-        //when
-        dateInfoRepository.save(publishDate)
-        weatherRepository.save(weather)
-    }
 
     @Test
     @DisplayName("weather entity 저장 테스트")

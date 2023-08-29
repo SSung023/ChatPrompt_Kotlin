@@ -1,8 +1,9 @@
 package kotlinproj.Util.config
 
-import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module
+import com.fasterxml.jackson.datatype.hibernate5.jakarta.Hibernate5JakartaModule
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+
 
 /**
  * @author HeeYeon
@@ -11,8 +12,12 @@ import org.springframework.context.annotation.Configuration
  */
 @Configuration
 class JacksonConfig {
+
+    // 강제 지연 로딩 설정을 하기 위해서는 이와 같이 추가해주면 된다.
     @Bean
-    fun hibernate5Module(): Hibernate5Module {
-        return Hibernate5Module();
+    fun hibernate5JakartaModule(): Hibernate5JakartaModule {
+        val hibernate5JakartaModule = Hibernate5JakartaModule()
+        hibernate5JakartaModule.configure(Hibernate5JakartaModule.Feature.FORCE_LAZY_LOADING, true)
+        return hibernate5JakartaModule
     }
 }
