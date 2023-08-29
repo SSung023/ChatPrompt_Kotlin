@@ -7,9 +7,7 @@ import org.springframework.context.annotation.Configuration
 /**
  * @author HeeYeon
  * @description
- * Hibernate5Module이 지연로딩 되는 객체의 프로퍼티 값이 비어져 있어도,
- * 직렬화를 가능하게 해준다.
- *
+ * Hibernate5Module이 지연로딩 되는 객체의 프로퍼티 값이 비어져 있어도, 직렬화를 가능하게 해준다.
  */
 @Configuration
 class JacksonConfig {

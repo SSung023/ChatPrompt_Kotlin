@@ -65,12 +65,13 @@ class SlackService(
 
         // TODO: block kit으로 변경
         if (isGreetingCondition(text)) {
-            val userDisName = getSlackDisplayName(userId);
-            return "$userDisName" + "님 안녕하세요!";
+            val userDisName = getSlackDisplayName(userId)
+            return "$userDisName" + "님 안녕하세요!"
         } else if( isWeatherAskingCondition(text) ) {
-            return weatherService.getWeatherInfo(LocalTime.now()).toString();
+//            return weatherService.getWeatherInfo(LocalTime.now(), 12).toString();
+            return "날씨 정보!"
         } else {
-            return "무슨 말인지 잘 모르겠어요😅";
+            return "무슨 말인지 잘 모르겠어요😅"
         }
     }
 

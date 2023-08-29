@@ -28,4 +28,29 @@ class Weather(
         protected set
     var skyState:String = skyState
         protected set
+
+    //=== 연관관계 편의 메서드 ===//
+    fun addDateInfo(dateInfo: DateInfo) {
+        this.dateInfo = dateInfo;
+        dateInfo.addWeather(this);
+    }
+
+
+    //=== toString, equals, hashCode ===//
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Weather) return false
+
+        if (id != other.id) return false
+
+        return true
+    }
+    override fun hashCode(): Int {
+        return id.hashCode()
+    }
+    override fun toString(): String {
+        return "Weather(id=$id, forecastTime='$forecastTime', temperature=$temperature, humidity=$humidity, rainPossibility=$rainPossibility, rainfall=$rainfall, skyState='$skyState')"
+    }
+
+
 }

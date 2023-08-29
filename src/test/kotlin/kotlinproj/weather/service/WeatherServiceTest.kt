@@ -24,7 +24,7 @@ class WeatherServiceTest() {
         //given
 
         //when
-        val searchWeather = weatherService.requestWeatherAPI(LocalTime.now());
+        val searchWeather = weatherService.requestWeatherAPI(LocalTime.now(), 12);
 
         //then
         val resCode = searchWeather.response.header.resultCode;
@@ -78,13 +78,13 @@ class WeatherServiceTest() {
     }
 
     @Test
-    @DisplayName("기상청 API를 통해 가지고 온 데이터를 weatherInfoDTO로 변환할 수 있다.")
+    @DisplayName("기상청 API를 통해 가지고 온 데이터 12개를 weatherInfoDTO로 변환할 수 있다.")
     fun convertTo_WeatherInfoDTO() {
         //given
         val weatherResponse:List<Item> = getItems();
 
         //when
-        val weatherDto:WeatherInfoDto = weatherService.convertResToWeatherDto(weatherResponse);
+        val weatherDto:WeatherInfoDto = weatherService.convertToWeatherDto(weatherResponse);
 
         //then
         assertThat(weatherDto.temp).isEqualTo("25.8");
@@ -95,16 +95,17 @@ class WeatherServiceTest() {
     }
 
     @Test
-    @DisplayName("API에서 받은 데이터를 통해 현재 시간에 제일 가까운 시간대의 정보를 얻을 수 있다.")
-    fun canGet_nearest_WeatherInfo() {
+    @DisplayName("여러 시간의 데이터를 가지고 왔을 때 fcstTime이 변화하면 다른 DTO객체로 변환된다.")
+    fun save_api_result() {
         //given
-        val curTime = LocalTime.now();
+        val weatherInfo = weatherService.requestWeatherAPI(LocalTime.now(), 24)
+            .response.body.items.item
 
         //when
-        val weatherDto:WeatherInfoDto = weatherService.getWeatherInfo(curTime);
+        val dtoList = weatherService.getWeatherInfo(weatherInfo)
 
         //then
-
+        assertThat(dtoList.size).isEqualTo(2)
     }
 
 

@@ -2,6 +2,7 @@ package kotlinproj.weather.service
 
 import kotlinproj.Util.exception.BusinessException
 import kotlinproj.Util.exception.constants.ErrorCode
+import kotlinproj.weather.constant.Constants.Companion.DATA_TYPE
 import kotlinproj.weather.constant.SkyCode
 import kotlinproj.weather.constant.WeatherCode
 import kotlinproj.weather.dto.WeatherInfoDto
@@ -30,25 +31,40 @@ class WeatherService(private val webBuilder: WebClient.Builder){
     lateinit var BASE_URL:String;
     @Value("\${kma.service-key}")
     lateinit var SERVICE_KEY:String;
-    private val NUM_OF_ROWS = 10000;
-    private val DATA_TYPE = "JSON";
 
 
 
     /**
-     * 기상청 Open API를 통해 받은 정보를 바탕으로 특정 시간대의 날씨 정보를 받아옴
-     * @param curTime 기상 정보를 받고 싶은 시간
+     * 기상청 Open API를 통해 받은 정보를 바탕으로 fcstTime 기준으로 WeatherInfoDto 생성
      */
-    fun getWeatherInfo(curTime: LocalTime): WeatherInfoDto {
-        val itemList = requestWeatherAPI(curTime).response.body.items.item;
-        return convertResToWeatherDto(itemList);
+    fun getWeatherInfo(weatherInfo: List<Item>): List<WeatherInfoDto> {
+        val weatherList:MutableList<WeatherInfoDto> = mutableListOf()
+        var fcstTime = weatherInfo.get(0).fcstTime;
+        for (item in weatherInfo) {
+
+            val tmpList:MutableList<Item> = mutableListOf()
+
+            if (fcstTime != item.fcstTime) {
+
+            }
+        }
+        return weatherList
+    }
+
+    /**
+     * Open API를 통해 불러온 기상청 정보를 DB에 저장
+     */
+    fun saveWeatherInfo(weatherList: List<WeatherInfoDto>){
+
+
+
     }
 
     /**
      * 기상청 Open API를 통해 단기예보 데이터를 가지고 옴
      * url 변동 사항: base_date, base_time, nx, ny
      */
-    fun requestWeatherAPI(curTime: LocalTime) : Response{
+    fun requestWeatherAPI(curTime: LocalTime, numOfRaws: Number) : Response{
         val factory = DefaultUriBuilderFactory(BASE_URL)
             .apply {
                 this.encodingMode = DefaultUriBuilderFactory.EncodingMode.VALUES_ONLY
@@ -63,7 +79,7 @@ class WeatherService(private val webBuilder: WebClient.Builder){
             .uri { uriBuilder: UriBuilder ->
                 uriBuilder
                     .queryParam("serviceKey", SERVICE_KEY)
-                    .queryParam("numOfRows", NUM_OF_ROWS)
+                    .queryParam("numOfRows", numOfRaws)
                     .queryParam("dataType", DATA_TYPE)
                     .queryParam("base_date", getBaseDate())
                     .queryParam("base_time", getBaseTime(curTime))
@@ -80,11 +96,13 @@ class WeatherService(private val webBuilder: WebClient.Builder){
         };
     }
 
+
+
     /**
      * @param resList numOfRows를 12로 설정하면 1시간동안의 날씨 정보를 배열로 받을 수 있음
      * 정보들을 모아서 WeatherInfoDto로 만들어서 반환
      */
-    fun convertResToWeatherDto(resList: List<Item>): WeatherInfoDto {
+    fun convertToWeatherDto(resList: List<Item>): WeatherInfoDto {
         val associated = resList.associateBy {
             it.category
         }
@@ -153,8 +171,4 @@ class WeatherService(private val webBuilder: WebClient.Builder){
         }?.description
             ?: throw BusinessException(ErrorCode.DATA_ERROR_NOT_FOUND);
     }
-
-
-
-
 }
