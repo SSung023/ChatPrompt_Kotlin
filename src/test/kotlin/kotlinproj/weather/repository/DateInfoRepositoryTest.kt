@@ -19,14 +19,14 @@ class DateInfoRepositoryTest {
     fun save_dateInfoEntity() {
         //given
         val dateInfo = DateInfo(
-            baseDate = "20230828", baseTime = "0200");
+            fcstDate = "20230828", baseTime = "0200");
 
         //when
         val savedDate = dateInfoRepository.save(dateInfo)
 
         //then
         Assertions.assertThat(savedDate.id).isEqualTo(1L);
-        Assertions.assertThat(savedDate.baseDate).isEqualTo(dateInfo.baseDate)
+        Assertions.assertThat(savedDate.fcstDate).isEqualTo(dateInfo.fcstDate)
         Assertions.assertThat(savedDate.baseTime).isEqualTo(dateInfo.baseTime)
     }
 }

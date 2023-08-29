@@ -1,5 +1,7 @@
 package kotlinproj.weather.service
 
+import kotlinproj.weather.domain.DateInfo
+import kotlinproj.weather.dto.kma.Item
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
@@ -61,13 +63,78 @@ class ApiServiceTest {
     }
 
     @Test
-    @DisplayName("여러 시간의 데이터를 가지고 왔을 때 fcstTime이 변화하면 다른 DTO객체로 변환된다.")
-    fun save_api_result() {
+    @DisplayName("fcstTime이 달라지면 다른 Weather 엔티티로 취급하여 List에 add한다.")
+    fun should_differenntEntity_when_fcstChanged() {
         //given
-        
+        val itemList:List<Item> = getItems("0900",false) + getItems("1000", true);
 
         //when
+        val weatherInfo = apiService.saveWeatherList(itemList)
 
         //then
+        assertThat(weatherInfo.size).isEqualTo(2);
+        assertThat(weatherInfo[0].forecastTime).isEqualTo("0900")
+        assertThat(weatherInfo[1].forecastTime).isEqualTo("1000")
+    }
+
+
+
+
+
+
+
+    // baseTime, fcstTime, fcstDate 필요
+    private fun getItems(fcstTime:String, flag:Boolean): List<Item> {
+        val weatherList:MutableList<Item> = mutableListOf();
+        weatherList.also {
+            it.add(getItem(fcstTime, "TMP", "25.8"))
+            it.add(getItem(fcstTime,"POP", "0"))
+            it.add(getItem(fcstTime,"PCP", "강수없음"))
+            it.add(getItem(fcstTime,"PTY", "0"))
+            it.add(getItem(fcstTime,"REH", "78"))
+            it.add(getItem(fcstTime,"SKY", "1"))
+            it.add(getItem(fcstTime,"SNO", "적설없음"))
+        }
+        if (flag){
+            weatherList.also {
+                it.add(getItem(fcstTime,"TMX", "29"))
+                it.add(getItem(fcstTime,"TMN", "24"))
+            }
+        }
+        return weatherList;
+    }
+    private fun getItem(fcstTime:String, category: String, fcstValue: String): Item {
+        return Item(
+            baseDate = "20230825", baseTime = "0800", category = category,
+            fcstDate = "20230825", fcstTime = fcstTime, fcstValue = fcstValue,
+            nx = 60, ny = 120
+        );
+    }
+
+    private fun getItems(fcstDate: String, fcstTime:String, flag:Boolean): List<Item> {
+        val weatherList:MutableList<Item> = mutableListOf();
+        weatherList.also {
+            it.add(getItem(fcstDate, fcstTime, "TMP", "25.8"))
+            it.add(getItem(fcstDate, fcstTime,"POP", "0"))
+            it.add(getItem(fcstDate, fcstTime,"PCP", "강수없음"))
+            it.add(getItem(fcstDate, fcstTime,"PTY", "0"))
+            it.add(getItem(fcstDate, fcstTime,"REH", "78"))
+            it.add(getItem(fcstDate, fcstTime,"SKY", "1"))
+            it.add(getItem(fcstDate, fcstTime,"SNO", "적설없음"))
+        }
+        if (flag){
+            weatherList.also {
+                it.add(getItem(fcstDate, fcstTime,"TMX", "29"))
+                it.add(getItem(fcstDate, fcstTime,"TMN", "24"))
+            }
+        }
+        return weatherList;
+    }
+    private fun getItem(fcstDate:String, fcstTime:String, category: String, fcstValue: String): Item {
+        return Item(
+            baseDate = "20230825", baseTime = "0800", category = category,
+            fcstDate = fcstDate, fcstTime = fcstTime, fcstValue = fcstValue,
+            nx = 60, ny = 120
+        );
     }
 }

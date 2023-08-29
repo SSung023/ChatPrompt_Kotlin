@@ -5,8 +5,8 @@ import jakarta.persistence.*
 @Entity
 class Weather(
     dateInfo: DateInfo,
-    forecastTime: String, temperature: String, humidity: Int,
-    rainPossible: Int, rainfall: String, skyState:String
+    forecastTime: String, temperature: Double, humidity: Int,
+    rainPossible: Int, rainAmt: String, skyState:String
 ) {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "weather_id")
@@ -18,13 +18,16 @@ class Weather(
 
     var forecastTime: String = forecastTime // 예보 시간
         protected set
-    var temperature: String = temperature // 1시간동안의 기온
+    @Column(columnDefinition = "DOUBLE")
+    var temperature: Double = temperature // 1시간동안의 기온
         protected set
+    @Column(columnDefinition = "INTEGER")
     var humidity: Int = humidity // 습도
         protected set
+    @Column(columnDefinition = "INTEGER")
     var rainPossibility: Int = rainPossible // 강수확률
         protected set
-    var rainAmt:String = rainfall // 강수량
+    var rainAmt:String = rainAmt // 강수량
         protected set
     var skyState:String = skyState // 하늘 상태
         protected set

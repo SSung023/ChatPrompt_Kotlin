@@ -3,6 +3,9 @@ package kotlinproj.weather.service
 import kotlinproj.Util.exception.BusinessException
 import kotlinproj.Util.exception.constants.ErrorCode
 import kotlinproj.weather.constant.Constants
+import kotlinproj.weather.domain.DateInfo
+import kotlinproj.weather.domain.Weather
+import kotlinproj.weather.dto.kma.Item
 import kotlinproj.weather.dto.kma.Response
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -17,12 +20,15 @@ import java.time.format.DateTimeFormatter
 @Service
 @Transactional(readOnly = true)
 class ApiService (
-    private val webBuilder: WebClient.Builder
+    private val webBuilder: WebClient.Builder,
+    private val weatherService: WeatherService,
+    private val dateInfoService: DateInfoService,
 ) {
     @Value("\${kma.callback-url}")
     lateinit var BASE_URL:String;
     @Value("\${kma.service-key}")
     lateinit var SERVICE_KEY:String;
+
 
 
     /**
@@ -61,12 +67,44 @@ class ApiService (
         };
     }
 
+    /**
+     * 기상청 Open API를 통해 받은 정보를 바탕으로 fcstTime 기준으로
+     * Weather 엔티티 객체 생성 후, List에 저장하고 bulk 방식으로 DB에 저장
+     *
+     * 문제: fcstDate가 바뀌면 dateInfo 객체도 새로 save 해주어야 함
+     */
+    fun saveWeatherList(weatherInfo: List<Item>) : List<Weather>{
+        val weatherList:MutableList<Weather> = mutableListOf()
 
+        var fcstTime = weatherInfo[0].fcstTime
+        var fcstDate = weatherInfo[0].fcstDate
+        val itemList = mutableListOf(weatherInfo[0])
+        var dateInfo = dateInfoService.saveOne(
+            DateInfo(weatherInfo[0].fcstDate, weatherInfo[0].baseTime))
 
+        for (item in weatherInfo) {
+            if (fcstTime != item.fcstTime) {
+                weatherList.add(addRelationToWeather(itemList, dateInfo));
 
-
-
-
+                fcstTime = item.fcstTime // 초기화
+                itemList.clear()
+            }
+            if (fcstDate != item.fcstDate) {
+                // 날짜가 바뀔 때 dateInfo 정보 변환
+                fcstDate = item.fcstDate
+                dateInfo = dateInfoService.saveOne(
+                    DateInfo(item.fcstDate, item.baseTime)
+                )
+            }
+            itemList.add(item)
+        }
+        weatherList.add(addRelationToWeather(itemList, dateInfo))
+        weatherService.saveWeatherInfo(weatherList)
+        return weatherList;
+    }
+    private fun addRelationToWeather(itemList: List<Item>, dateInfo: DateInfo): Weather {
+        return weatherService.convertToWeatherEntity(itemList, dateInfo)
+    }
 
 
     /**

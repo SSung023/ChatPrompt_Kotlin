@@ -3,8 +3,8 @@ package kotlinproj.weather.domain
 import jakarta.persistence.*
 
 @Entity
-class DateInfo(baseDate:String, baseTime:String,
-    maxTemp:Number? = 0, minTemp:Number? = 0) {
+class DateInfo(fcstDate:String, baseTime:String,
+               maxTemp:Double? = 0.0, minTemp:Double? = 0.0) {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "dateInfo_id", nullable = false)
     val id:Long = 0;
@@ -13,14 +13,16 @@ class DateInfo(baseDate:String, baseTime:String,
     private val mutableWeatherInfo: MutableList<Weather> = mutableListOf()
     val weatherInfo: List<Weather> get() = mutableWeatherInfo.toList();
 
-    var baseDate:String = baseDate
+    var fcstDate:String = fcstDate
         protected set
     var baseTime:String = baseTime
         protected set
 
-    var maxTemp:Number? = maxTemp
+    @Column(columnDefinition = "DOUBLE")
+    var maxTemp:Double? = maxTemp
         protected set
-    var minTemp:Number? = minTemp
+    @Column(columnDefinition = "DOUBLE")
+    var minTemp:Double? = minTemp
         protected set
 
 
@@ -47,7 +49,7 @@ class DateInfo(baseDate:String, baseTime:String,
         return id.hashCode()
     }
     override fun toString(): String {
-        return "DateInfo(id=$id, baseDate='$baseDate', baseTime='$baseTime', maxTemp=$maxTemp, minTemp=$minTemp)"
+        return "DateInfo(id=$id, baseDate='$fcstDate', baseTime='$baseTime', maxTemp=$maxTemp, minTemp=$minTemp)"
     }
 
 

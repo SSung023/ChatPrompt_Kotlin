@@ -13,8 +13,8 @@ import kotlin.jvm.optionals.getOrElse
 class DateInfoService (private val dateInfoRepository: DateInfoRepository){
 
     @Transactional
-    fun saveOne(dateInfo: DateInfo): Long{
-        return dateInfoRepository.save(dateInfo).id;
+    fun saveOne(dateInfo: DateInfo): DateInfo{
+        return dateInfoRepository.save(dateInfo);
     }
 
     fun findOne(id: Long) : DateInfo {
@@ -22,5 +22,9 @@ class DateInfoService (private val dateInfoRepository: DateInfoRepository){
             .getOrElse {
                 throw BusinessException(ErrorCode.DATA_ERROR_NOT_FOUND)
             };
+    }
+    fun getDateInfoEntity(dateInfo: DateInfo, maxTemp: Double, minTemp: Double): DateInfo {
+        val dateInfo = DateInfo(dateInfo.fcstDate, dateInfo.baseTime, maxTemp, minTemp)
+        return saveOne(dateInfo)
     }
 }

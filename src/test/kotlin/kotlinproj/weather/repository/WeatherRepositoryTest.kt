@@ -3,7 +3,6 @@ package kotlinproj.weather.repository
 import kotlinproj.weather.domain.DateInfo
 import kotlinproj.weather.domain.Weather
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -27,10 +26,10 @@ class WeatherRepositoryTest {
     fun save_weather_entity_test() {
         //given
         val publishDate = DateInfo(
-            baseDate = "20230828", baseTime = "0200")
+            fcstDate = "20230828", baseTime = "0200")
         val weather = Weather(publishDate,
-            forecastTime = "0300", temperature = "23", humidity = 60,
-            rainPossible = 30, rainfall = "1.2", skyState = "1")
+            forecastTime = "0300", temperature = 23, humidity = 60,
+            rainPossible = 30, rainAmt = "1.2", skyState = "1")
 
         //when
         dateInfoRepository.save(publishDate)

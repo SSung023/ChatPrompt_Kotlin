@@ -2,6 +2,7 @@ package kotlinproj.weather.service
 
 import kotlinproj.Util.log.Logger
 import kotlinproj.weather.constant.SkyCode
+import kotlinproj.weather.constant.WeatherCode
 import kotlinproj.weather.domain.DateInfo
 import kotlinproj.weather.domain.Weather
 import kotlinproj.weather.dto.WeatherInfoDto
@@ -59,12 +60,20 @@ class WeatherServiceTest() {
         val dateInfo = getSavedDateInfo();
 
         val weatherResponse:List<Item> = getItems();
-        
+        val associated = weatherResponse.associateBy { it.category }
+
         //when
         val weather:Weather = weatherService.convertToWeatherEntity(weatherResponse, dateInfo);
-        
+        val skyState = weatherService.getSkyState(associated[WeatherCode.SKY.name]?.fcstValue?.toInt()!!)
+
         //then
-        Logger.log.info { weather.toString() }
+        assertThat(weather.dateInfo).isEqualTo(dateInfo)
+        assertThat(weather.forecastTime).isEqualTo(weatherResponse[0].fcstTime)
+        assertThat(weather.humidity).isEqualTo(associated[WeatherCode.REH.name]?.fcstValue?.toInt())
+        assertThat(weather.rainAmt).isEqualTo(associated[WeatherCode.PCP.name]?.fcstValue)
+        assertThat(weather.rainPossibility).isEqualTo(associated[WeatherCode.POP.name]?.fcstValue?.toInt())
+        assertThat(weather.temperature).isEqualTo(associated[WeatherCode.TMP.name]?.fcstValue?.toDouble())
+        assertThat(weather.skyState).isEqualTo(skyState)
     }
 
 
