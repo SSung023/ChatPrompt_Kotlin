@@ -5,8 +5,8 @@ import jakarta.persistence.*
 @Entity
 class Weather(
     dateInfo: DateInfo,
-    forecastTime: String, temperature: Int, humidity: Int,
-    rainPossible: Int, rainfall: Int, skyState:String
+    forecastTime: String, temperature: String, humidity: Int,
+    rainPossible: Int, rainfall: String, skyState:String
 ) {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "weather_id")
@@ -16,17 +16,17 @@ class Weather(
     @JoinColumn(name = "dateInfo_id")
     var dateInfo: DateInfo = dateInfo
 
-    var forecastTime: String = forecastTime
+    var forecastTime: String = forecastTime // 예보 시간
         protected set
-    var temperature: Int = temperature
+    var temperature: String = temperature // 1시간동안의 기온
         protected set
-    var humidity: Int = humidity
+    var humidity: Int = humidity // 습도
         protected set
-    var rainPossibility: Int = rainPossible
+    var rainPossibility: Int = rainPossible // 강수확률
         protected set
-    var rainfall:Int = rainfall
+    var rainAmt:String = rainfall // 강수량
         protected set
-    var skyState:String = skyState
+    var skyState:String = skyState // 하늘 상태
         protected set
 
     //=== 연관관계 편의 메서드 ===//
@@ -49,7 +49,7 @@ class Weather(
         return id.hashCode()
     }
     override fun toString(): String {
-        return "Weather(id=$id, forecastTime='$forecastTime', temperature=$temperature, humidity=$humidity, rainPossibility=$rainPossibility, rainfall=$rainfall, skyState='$skyState')"
+        return "Weather(id=$id, forecastTime='$forecastTime', temperature=$temperature, humidity=$humidity, rainPossibility=$rainPossibility, rainfall=$rainAmt, skyState='$skyState')"
     }
 
 

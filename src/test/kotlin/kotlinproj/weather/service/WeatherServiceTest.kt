@@ -1,8 +1,12 @@
 package kotlinproj.weather.service
 
+import kotlinproj.Util.log.Logger
 import kotlinproj.weather.constant.SkyCode
+import kotlinproj.weather.domain.DateInfo
+import kotlinproj.weather.domain.Weather
 import kotlinproj.weather.dto.WeatherInfoDto
 import kotlinproj.weather.dto.kma.Item
+import kotlinproj.weather.repository.DateInfoRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatNoException
 import org.junit.jupiter.api.DisplayName
@@ -16,6 +20,7 @@ import java.time.LocalTime
 @SpringBootTest
 @Transactional
 class WeatherServiceTest() {
+    @Autowired lateinit var dateInfoRepository: DateInfoRepository
     @Autowired lateinit var weatherService: WeatherService;
 
     @Test
@@ -93,6 +98,21 @@ class WeatherServiceTest() {
         assertThat(weatherDto.rainAmount).isEqualTo("강수없음");
         assertThat(weatherDto.sky).isEqualTo(SkyCode.SUNNY.description);
     }
+    
+    @Test
+    @DisplayName("List<Item>을 전달했을 때, Weather 엔티티로 변환이 가능하다.")
+    fun canConvertTo_WeatherEntity() {
+        //given
+        val dateInfo = getSavedDateInfo();
+
+        val weatherResponse:List<Item> = getItems();
+        
+        //when
+        val weather:Weather = weatherService.convertToWeatherEntity(weatherResponse, dateInfo);
+        
+        //then
+        Logger.log.info { weather.toString() }
+    }
 
     @Test
     @DisplayName("여러 시간의 데이터를 가지고 왔을 때 fcstTime이 변화하면 다른 DTO객체로 변환된다.")
@@ -143,5 +163,10 @@ class WeatherServiceTest() {
         );
     }
 
+    private fun getSavedDateInfo(): DateInfo {
+        return dateInfoRepository.save(
+            DateInfo("20230829", "0200", 28, 21)
+        );
+    }
 
 }

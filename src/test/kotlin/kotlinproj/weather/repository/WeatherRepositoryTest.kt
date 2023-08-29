@@ -1,6 +1,6 @@
 package kotlinproj.weather.repository
 
-import kotlinproj.weather.domain.PublishDate
+import kotlinproj.weather.domain.DateInfo
 import kotlinproj.weather.domain.Weather
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -24,11 +24,11 @@ class WeatherRepositoryTest {
     @BeforeEach
     fun setup(){
         //given
-        val publishDate = PublishDate(
+        val publishDate = DateInfo(
             baseDate = "20230828", baseTime = "0200")
         val weather = Weather(publishDate,
-            forecastTime = "0300", temperature = 23, humidity = 60,
-            rainPossible = 30, rainfall = 1, skyState = "1")
+            forecastTime = "0300", temperature = "23", humidity = 60,
+            rainPossible = 30, rainfall = "1.2", skyState = "1")
 
         //when
         dateInfoRepository.save(publishDate)
@@ -39,11 +39,11 @@ class WeatherRepositoryTest {
     @DisplayName("weather entity 저장 테스트")
     fun save_weather_entity_test() {
         //given
-        val publishDate = PublishDate(
+        val publishDate = DateInfo(
             baseDate = "20230828", baseTime = "0200")
         val weather = Weather(publishDate,
-            forecastTime = "0300", temperature = 23, humidity = 60,
-            rainPossible = 30, rainfall = 1, skyState = "1")
+            forecastTime = "0300", temperature = "23", humidity = 60,
+            rainPossible = 30, rainfall = "1.2", skyState = "1")
 
         //when
         dateInfoRepository.save(publishDate)
