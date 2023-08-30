@@ -1,6 +1,5 @@
 package kotlinproj.weather.service
 
-import kotlinproj.weather.domain.DateInfo
 import kotlinproj.weather.dto.kma.Item
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat

@@ -18,6 +18,10 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
+/**
+ * @author HeeYeon
+ * @description 기상청 Open API 관련 로직 처리
+ */
 @Service
 @Transactional(readOnly = true)
 class ApiService (
@@ -98,17 +102,18 @@ class ApiService (
                     DateInfo(item.fcstDate, item.baseTime)
                 )
             }
-            if (item.category == WeatherCode.TMX.name) {
-                dateInfo.updateMaxTemp(item.fcstValue.toDouble())
-            }
-            else if (item.category == WeatherCode.TMN.name) {
-                dateInfo.updateMinTemp(item.fcstValue.toDouble())
+            when (item.category) {
+                WeatherCode.TMX.name -> {
+                    dateInfo.updateMaxTemp(item.fcstValue.toDouble())
+                }
+                WeatherCode.TMN.name -> {
+                    dateInfo.updateMinTemp(item.fcstValue.toDouble())
+                }
             }
             itemList.add(item)
         }
         weatherList.add(addRelationToWeather(itemList, dateInfo))
-        weatherService.saveWeatherInfo(weatherList)
-        return weatherList;
+        return weatherService.saveWeatherInfo(weatherList)
     }
     private fun addRelationToWeather(itemList: List<Item>, dateInfo: DateInfo): Weather {
         return weatherService.convertToWeatherEntity(itemList, dateInfo)

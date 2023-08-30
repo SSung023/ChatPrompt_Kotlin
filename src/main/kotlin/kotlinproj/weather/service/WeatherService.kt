@@ -28,8 +28,8 @@ class WeatherService(
      * Open API를 통해 불러온 기상청 정보를 DB에 저장
      */
     @Transactional
-    fun saveWeatherInfo(weatherList: List<Weather>){
-        weatherRepository.saveAll(weatherList)
+    fun saveWeatherInfo(weatherList: List<Weather>): List<Weather>{
+        return weatherRepository.saveAll(weatherList)
     }
 
 
