@@ -36,6 +36,8 @@ class ApiService (
 
 
 
+
+
     /**
      * 기상청 Open API를 통해 받은 단기예보 데이터를 받음
      * url 변동 사항: base_date, base_time, nx, ny
@@ -75,8 +77,6 @@ class ApiService (
     /**
      * 기상청 Open API를 통해 받은 정보를 바탕으로 fcstTime 기준으로
      * Weather 엔티티 객체 생성 후, List에 저장하고 bulk 방식으로 DB에 저장
-     *
-     * 문제: fcstDate가 바뀌면 dateInfo 객체도 새로 save 해주어야 함
      */
     @Transactional
     fun saveWeatherList(weatherInfo: List<Item>) : List<Weather>{

@@ -1,15 +1,15 @@
 package kotlinproj.slack.controller
 
+import com.slack.api.util.json.GsonFactory
 import kotlinproj.Util.exception.BusinessException
 import kotlinproj.Util.exception.constants.ErrorCode
+import kotlinproj.Util.log.Logger
+import kotlinproj.slack.dto.BlockPayload
 import kotlinproj.slack.dto.ValidDto
 import kotlinproj.slack.service.SlackService
 import kotlinproj.weather.service.ApiService
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.http.MediaType
+import org.springframework.web.bind.annotation.*
 import java.time.LocalTime
 
 @RestController
@@ -29,6 +29,7 @@ class SlackController(private val slackService: SlackService,
         val eventValue = requireNotNull(req["event"]) {
             throw BusinessException(ErrorCode.DATA_ERROR_NOT_FOUND)
         }
+        Logger.log.info { req.toString() }
 
         slackService.sendMessageByWebhook(eventValue as Map<String, String>);
     }
@@ -39,4 +40,16 @@ class SlackController(private val slackService: SlackService,
             apiService.requestWeatherAPI(LocalTime.now(), 10000)
                 .response.body.items.item);
     }
+
+    @PostMapping(
+        value = arrayOf("/action"),
+        consumes = arrayOf(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    )
+    fun action(@RequestParam payload: String) {
+        val fromJson = GsonFactory.createSnakeCase()
+            .fromJson(payload, BlockPayload::class.java)
+
+        Logger.log.info { fromJson.toString() }
+    }
 }
+

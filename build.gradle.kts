@@ -33,8 +33,15 @@ dependencies {
     implementation("com.slack.api:bolt-servlet:1.30.0")
     implementation("com.slack.api:bolt-jetty:1.30.0")
 
+    // slack - kotlin extension
+    implementation("com.slack.api:slack-api-model-kotlin-extension:1.30.0")
+    implementation("com.slack.api:slack-api-client-kotlin-extension:1.30.0")
+
     //webflux
     implementation("org.springframework.boot:spring-boot-starter-webflux")
+
+    //Gson
+    implementation("com.google.code.gson:gson:2.8.9")
 
     // jackson configuration
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-hibernate5-jakarta")
