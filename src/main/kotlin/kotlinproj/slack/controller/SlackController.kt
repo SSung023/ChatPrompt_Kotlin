@@ -49,7 +49,7 @@ class SlackController(private val slackService: SlackService,
         val fromJson = GsonFactory.createSnakeCase()
             .fromJson(payload, BlockPayload::class.java)
 
-        Logger.log.info { fromJson.toString() }
+
     }
 }
 

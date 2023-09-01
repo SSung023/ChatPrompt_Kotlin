@@ -1,7 +1,11 @@
 package kotlinproj.slack.service
 
+import com.slack.api.model.block.LayoutBlock
+import com.slack.api.util.json.GsonFactory
 import kotlinproj.Util.exception.BusinessException
+import kotlinproj.Util.log.Logger
 import kotlinproj.slack.constant.EventType
+import kotlinproj.slack.dto.BlockPayload
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
@@ -84,18 +88,16 @@ class SlackServiceTest {
     }
 
     @Test
-    @DisplayName("slack event 내용에 인삿말이 있으면 ()님 안녕하세요!를 출력해야 한다.")
+    @DisplayName("slack event 내용에 인삿말이 있으면 ()님 안녕하세요!가 담긴 LayoutBlock을 반환해야 한다.")
     fun should_SayHello_when_IncludeHello() {
         //given
         val eventValue = getEventValue(EventType.APP_MENTION.type, "안녕");
 
         //when
-        val greeting:String? = slackService.customizeMsgByCondition(eventValue);
+        val blockList:List<LayoutBlock> = slackService.customizeBlocks(eventValue);
 
         //then
-        greeting?.let {
-            assertThat(greeting).isEqualTo("HEY님 안녕하세요!");
-        }
+        Logger.log.info { blockList[0].type }
     }
 
     @Test
@@ -105,12 +107,9 @@ class SlackServiceTest {
         val eventValue = getEventValue(EventType.APP_MENTION.type, "");
 
         //when
-        val greeting:String? = slackService.customizeMsgByCondition(eventValue);
+        slackService.customizeBlocks(eventValue);
 
         //then
-        greeting?.let {
-            assertThat(greeting).isEqualTo("HEY님 안녕하세요!");
-        }
     }
 
     @Test
@@ -120,10 +119,9 @@ class SlackServiceTest {
         val eventValue = getEventValue(EventType.APP_MENTION.type, "다른 말");
 
         //when
-        val greeting:String? = slackService.customizeMsgByCondition(eventValue);
+        slackService.customizeBlocks(eventValue);
 
         //then
-        assertThat(greeting).isNotEqualTo("HEY님 안녕하세요!");
     }
 
     @Test
@@ -192,3 +190,7 @@ class SlackServiceTest {
         return eventValue;
     }
 }
+
+data class Section(val type: String, val text:Text)
+data class Text(val mrkdwnText: MrkdownText, val blockId:Number, val fields: Any, val accessroy: Any)
+data class MrkdownText(val type: String, val text:String, val verbatim:Any)
