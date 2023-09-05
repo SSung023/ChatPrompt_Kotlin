@@ -6,6 +6,7 @@ import kotlinproj.weather.constant.Constants
 import kotlinproj.weather.constant.WeatherCode
 import kotlinproj.weather.domain.DateInfo
 import kotlinproj.weather.domain.Weather
+import kotlinproj.weather.dto.WeatherInfoDto
 import kotlinproj.weather.dto.kma.Item
 import kotlinproj.weather.dto.kma.Response
 import org.springframework.beans.factory.annotation.Value
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.util.DefaultUriBuilderFactory
 import org.springframework.web.util.UriBuilder
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -59,7 +61,7 @@ class ApiService (
                     .queryParam("serviceKey", SERVICE_KEY)
                     .queryParam("numOfRows", numOfRaws)
                     .queryParam("dataType", Constants.DATA_TYPE)
-                    .queryParam("base_date", getBaseDate())
+                    .queryParam("base_date", getBaseDate(LocalDate.now()))
                     .queryParam("base_time", getBaseTime(curTime))
                     .queryParam("nx", 120)
                     .queryParam("ny", 60)
@@ -119,15 +121,27 @@ class ApiService (
         return weatherService.convertToWeatherEntity(itemList, dateInfo)
     }
 
+    /**
+     * 요청 시간대에 맞춰서
+     */
+    fun loadWeather(date: LocalDate, time: LocalTime): List<WeatherInfoDto> {
+        val dateStr = getBaseDate(date)
+        val timeStr = getBaseTime(time)
+
+        val r :List<WeatherInfoDto> = listOf()
+
+        return r
+    }
+
+
 
     /**
      * request url에 들어갈 base_date를 구함
      * -> 현재의 날짜를 yyyyMMdd 형식으로 바꾸는 코드
      */
-    fun getBaseDate(): String {
-        val curTime = LocalDateTime.now()
+    fun getBaseDate(curDate: LocalDate): String {
         val formatter = DateTimeFormatter.ofPattern("yyyyMMdd")
-        return curTime.format(formatter);
+        return curDate.format(formatter);
     }
 
     /**
@@ -158,4 +172,26 @@ class ApiService (
             else -> {"0000"}
         }
     }
+
+    /**
+     * DB에서 날씨 정보를 찾을 시작 시간대를 반환
+     * ex) 11:40 -> 1200, 14:39 -> 1500
+     */
+    fun getForecastTime(curTime: LocalTime): String {
+        val curHours = curTime.hour
+        val curMinutes = curTime.minute;
+        var hours = "";
+
+        // 다음 시간대
+        if (curHours < 23 && curMinutes > 0) {
+            hours =  (curHours + 1).toString()
+            if (hours.length==1) hours = "0$hours"
+        }
+        else {
+            hours = "00"
+        }
+        return hours + "00"
+    }
+
+
 }

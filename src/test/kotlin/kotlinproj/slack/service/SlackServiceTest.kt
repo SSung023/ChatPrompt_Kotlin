@@ -190,7 +190,3 @@ class SlackServiceTest {
         return eventValue;
     }
 }
-
-data class Section(val type: String, val text:Text)
-data class Text(val mrkdwnText: MrkdownText, val blockId:Number, val fields: Any, val accessroy: Any)
-data class MrkdownText(val type: String, val text:String, val verbatim:Any)

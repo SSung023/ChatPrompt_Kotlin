@@ -6,6 +6,7 @@ import kotlinproj.Util.exception.constants.ErrorCode
 import kotlinproj.Util.log.Logger
 import kotlinproj.slack.dto.BlockPayload
 import kotlinproj.slack.dto.ValidDto
+import kotlinproj.slack.dto.ValueData
 import kotlinproj.slack.service.SlackService
 import kotlinproj.weather.service.ApiService
 import org.springframework.http.MediaType
@@ -29,8 +30,6 @@ class SlackController(private val slackService: SlackService,
         val eventValue = requireNotNull(req["event"]) {
             throw BusinessException(ErrorCode.DATA_ERROR_NOT_FOUND)
         }
-        Logger.log.info { req.toString() }
-
         slackService.sendMessageByWebhook(eventValue as Map<String, String>);
     }
 
@@ -41,13 +40,18 @@ class SlackController(private val slackService: SlackService,
                 .response.body.items.item);
     }
 
+    //
     @PostMapping(
         value = arrayOf("/action"),
         consumes = arrayOf(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     )
     fun action(@RequestParam payload: String) {
-        val fromJson = GsonFactory.createSnakeCase()
+        val fromJson: BlockPayload = GsonFactory.createSnakeCase()
             .fromJson(payload, BlockPayload::class.java)
+
+        val values: List<Map<String, ValueData>> = fromJson.state.values.values.toList()
+        val date = values[0]["+kP"]?.selected_date
+        val time = values[0]["=DLz"]?.selected_time
 
 
     }

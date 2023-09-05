@@ -32,6 +32,11 @@ class WeatherService(
         return weatherRepository.saveAll(weatherList)
     }
 
+    @Transactional
+    fun saveOne(weather: Weather) : Weather {
+        return weatherRepository.save(weather)
+    }
+
 
     /**
      * @param resList numOfRows를 12로 설정하면 1시간동안의 날씨 정보를 배열로 받을 수 있음

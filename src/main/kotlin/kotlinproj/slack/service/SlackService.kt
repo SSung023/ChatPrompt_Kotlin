@@ -23,9 +23,7 @@ import java.time.format.DateTimeFormatter
  */
 @Service
 @Transactional(readOnly = true)
-class SlackService(
-    private val apiService: ApiService
-    ) {
+class SlackService {
     @Value(value = "\${slack.bot-token}")
     lateinit var botToken:String;
     @Value("\${slack.webhook-url}")
@@ -136,7 +134,7 @@ class SlackService(
     fun getGreetingLayoutBlock(userDisName:String): List<LayoutBlock>{
         return withBlocks {
             section {
-                markdownText("안녕하세요 :wave:, 저는 :sloth: *나무늘봇* 이에요. \n 날씨를 찾아보기 귀찮으실 *$userDisName* 님을 대신 날씨를 찾아보고 알려드려요!\n" +
+                markdownText("안녕하세요 :wave:, 저는 :sloth: *나무늘봇* 이에요. \n 날씨를 찾아보기 귀찮으신 *$userDisName* 님 대신 날씨를 찾아보고 알려드릴게요!\n" +
                         "제가.. 궁금하실 분들을 위해 사용법을 알려드릴게요!:sunglasses:")
             }
             section {
