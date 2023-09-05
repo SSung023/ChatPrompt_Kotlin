@@ -1,68 +1,27 @@
 package kotlinproj.weather.service
 
+import kotlinproj.Util.log.Logger
 import kotlinproj.weather.constant.SkyCode
+import kotlinproj.weather.constant.WeatherCode
+import kotlinproj.weather.domain.DateInfo
+import kotlinproj.weather.domain.Weather
 import kotlinproj.weather.dto.WeatherInfoDto
 import kotlinproj.weather.dto.kma.Item
+import kotlinproj.weather.repository.DateInfoRepository
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.assertThatNoException
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.transaction.annotation.Transactional
-import java.time.LocalDateTime
-import java.time.LocalTime
 
 @SpringBootTest
 @Transactional
 class WeatherServiceTest() {
+    @Autowired lateinit var dateInfoRepository: DateInfoRepository
     @Autowired lateinit var weatherService: WeatherService;
 
-    @Test
-    @DisplayName("callback url로 요청을 했을 때 성공 코드(00)이 와야 한다.")
-    fun shouldNotError_when_Request() {
-        //given
 
-        //when
-        val searchWeather = weatherService.requestWeatherAPI(LocalTime.now());
-
-        //then
-        val resCode = searchWeather.response.header.resultCode;
-        assertThat(resCode).isEqualTo("00");
-        assertThatNoException();
-    }
-
-    @Test
-    @DisplayName("현재의 시간을 yyyymmdd 형태로 변환할 수 있다.")
-    fun canConvert_To_CertainFormat() {
-        //given
-        val curTime = LocalDateTime.now().toString();
-        val dateArr = curTime.split("-", "T");
-        var expected = "";
-        for (i in 0..2){
-            expected += dateArr[i];
-        }
-
-        //when
-        val formattedDate = weatherService.getBaseDate();
-
-        //then
-        assertThat(formattedDate).isEqualTo(expected)
-    }
-
-    @Test
-    @DisplayName("시간에 맞춰서 base_time request param을 설정할 수 있다.")
-    fun setParam_By_CurTime() {
-        //given
-        val curTime:LocalTime = LocalTime.of(10, 30, 9);
-
-        //when
-        val formattedTime = weatherService.getBaseTime(curTime);
-
-        //then
-        assertThat(formattedTime).isEqualTo("0800");
-    }
-    
     @Test
     @DisplayName("SKY 코드표를 통해 하늘이 어떤 상태인지 확인할 수 있다.")
     fun canCheck_SkyCode() {
@@ -78,13 +37,13 @@ class WeatherServiceTest() {
     }
 
     @Test
-    @DisplayName("기상청 API를 통해 가지고 온 데이터를 weatherInfoDTO로 변환할 수 있다.")
+    @DisplayName("기상청 API를 통해 가지고 온 데이터 12개를 weatherInfoDTO로 변환할 수 있다.")
     fun convertTo_WeatherInfoDTO() {
         //given
         val weatherResponse:List<Item> = getItems();
 
         //when
-        val weatherDto:WeatherInfoDto = weatherService.convertResToWeatherDto(weatherResponse);
+        val weatherDto:WeatherInfoDto = weatherService.convertToWeatherDto(weatherResponse);
 
         //then
         assertThat(weatherDto.temp).isEqualTo("25.8");
@@ -93,18 +52,45 @@ class WeatherServiceTest() {
         assertThat(weatherDto.rainAmount).isEqualTo("강수없음");
         assertThat(weatherDto.sky).isEqualTo(SkyCode.SUNNY.description);
     }
-
+    
     @Test
-    @DisplayName("API에서 받은 데이터를 통해 현재 시간에 제일 가까운 시간대의 정보를 얻을 수 있다.")
-    fun canGet_nearest_WeatherInfo() {
+    @DisplayName("List<Item>을 전달했을 때, Weather 엔티티로 변환이 가능하다.")
+    fun canConvertTo_WeatherEntity() {
         //given
-        val curTime = LocalTime.now();
+        val dateInfo = getSavedDateInfo();
+
+        val weatherResponse:List<Item> = getItems();
+        val associated = weatherResponse.associateBy { it.category }
 
         //when
-        val weatherDto:WeatherInfoDto = weatherService.getWeatherInfo(curTime);
+        val weather:Weather = weatherService.convertToWeatherEntity(weatherResponse, dateInfo);
+        val skyState = weatherService.getSkyState(associated[WeatherCode.SKY.name]?.fcstValue?.toInt()!!)
 
         //then
+        assertThat(weather.dateInfo).isEqualTo(dateInfo)
+        assertThat(weather.forecastTime).isEqualTo(weatherResponse[0].fcstTime)
+        assertThat(weather.humidity).isEqualTo(associated[WeatherCode.REH.name]?.fcstValue?.toInt())
+        assertThat(weather.rainAmt).isEqualTo(associated[WeatherCode.PCP.name]?.fcstValue)
+        assertThat(weather.rainPossibility).isEqualTo(associated[WeatherCode.POP.name]?.fcstValue?.toInt())
+        assertThat(weather.temperature).isEqualTo(associated[WeatherCode.TMP.name]?.fcstValue?.toDouble())
+        assertThat(weather.skyState).isEqualTo(skyState)
+    }
+    @Test
+    @DisplayName("List<Item>에 TMX 혹은 TMN 값이 있다면 dateInfo에 할당해준다.")
+    fun assignTempInfo_When_Exist() {
+        //given
+        val itemList = getItems()
+        val dateInfo = DateInfo("20230829", "1400")
+        val associated = itemList.associateBy {
+            it.category
+        }
 
+        //when
+        weatherService.convertToWeatherEntity(itemList, dateInfo)
+
+        //then
+        assertThat(dateInfo.maxTemp).isEqualTo(associated["TMX"]?.fcstValue?.toDouble())
+        assertThat(dateInfo.minTemp).isEqualTo(associated["TMN"]?.fcstValue?.toDouble())
     }
 
 
@@ -142,5 +128,10 @@ class WeatherServiceTest() {
         );
     }
 
+    private fun getSavedDateInfo(): DateInfo {
+        return dateInfoRepository.save(
+            DateInfo("20230829", "0200", 28.0, 21.0)
+        );
+    }
 
 }
