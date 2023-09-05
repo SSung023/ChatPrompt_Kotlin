@@ -1,8 +1,11 @@
 package kotlinproj.slack.service
 
+import com.slack.api.model.block.LayoutBlock
+import com.slack.api.util.json.GsonFactory
 import kotlinproj.Util.exception.BusinessException
 import kotlinproj.Util.log.Logger
 import kotlinproj.slack.constant.EventType
+import kotlinproj.slack.dto.BlockPayload
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
@@ -29,16 +32,28 @@ class SlackServiceTest {
         //then
         Assertions.assertThatNoException();
     }
+
+    @Test
+    @DisplayName("event의 종류가 app_mention일 때 실행되어야 한다.")
+    fun shouldRun_when_eventType_app_mention() {
+        //given
+        val eventValue = getEventValue(EventType.APP_MENTION.type, "");
+
+        //when
+        val payload = slackService.getPayloadByType(eventValue);
+
+        //then
+        assertThat(payload).isEqualTo("{\"text\":\"HEY님 안녕하세요!\"}");
+    }
     
     @Test
     @DisplayName("api를 통해 user의 정보를 받아올 수 있다.")
     fun canExtract_userInfo_ByAPI() {
         //given
-        val eventInfo = getEventValue(EventType.APP_MENTION.type, "") as Map<String, String>;
-        val user = eventInfo["user"]!!; // ex) U05MVCYDKJL
+        val userId = "U05MVCYDKJL" // ex) U05MVCYDKJL
         
         //when
-        val username:String = slackService.getSlackDisplayName(user);
+        val username:String = slackService.getSlackDisplayName(userId);
         
         //then
         assertThat(username).isEqualTo("HEY");
@@ -57,33 +72,44 @@ class SlackServiceTest {
     }
 
     @Test
-    @DisplayName("slack event 내용에 인삿말이 있으면 ()님 안녕하세요!를 출력해야 한다.")
+    @DisplayName("멘션만 있거나 인삿말이 포함되어 있는 경우에는 true를 반환해야 한다.")
+    fun shouldReturn_True() {
+        //given
+        val text1 = "<@U05MMBQ2AKD>";
+        val text2 = "<@U05MMBQ2AKD> 안녕";
+
+        //when
+        val res1 = slackService.isGreetingCondition(text1);
+        val res2 = slackService.isGreetingCondition(text2);
+
+        //then
+        assertThat(res1).isTrue();
+        assertThat(res2).isTrue();
+    }
+
+    @Test
+    @DisplayName("slack event 내용에 인삿말이 있으면 ()님 안녕하세요!가 담긴 LayoutBlock을 반환해야 한다.")
     fun should_SayHello_when_IncludeHello() {
         //given
         val eventValue = getEventValue(EventType.APP_MENTION.type, "안녕");
 
         //when
-        val greeting:String? = slackService.customizeMentionRes(eventValue);
+        val blockList:List<LayoutBlock> = slackService.customizeBlocks(eventValue);
 
         //then
-        greeting?.let {
-            assertThat(greeting).isEqualTo("HEY님 안녕하세요!");
-        }
+        Logger.log.info { blockList[0].type }
     }
 
     @Test
-    @DisplayName("slack event 내용에 멘션만 있거나 ()님 안녕하세요!를 출력해야 한다.")
+    @DisplayName("slack event 내용에 멘션만 있으면 ()님 안녕하세요!를 출력해야 한다.")
     fun should_SayHello_when_OnlyMention() {
         //given
         val eventValue = getEventValue(EventType.APP_MENTION.type, "");
 
         //when
-        val greeting:String? = slackService.customizeMentionRes(eventValue);
+        slackService.customizeBlocks(eventValue);
 
         //then
-        greeting?.let {
-            assertThat(greeting).isEqualTo("HEY님 안녕하세요!");
-        }
     }
 
     @Test
@@ -93,10 +119,9 @@ class SlackServiceTest {
         val eventValue = getEventValue(EventType.APP_MENTION.type, "다른 말");
 
         //when
-        val greeting:String? = slackService.customizeMentionRes(eventValue);
+        slackService.customizeBlocks(eventValue);
 
         //then
-        assertThat(greeting).isNotEqualTo("HEY님 안녕하세요!");
     }
 
     @Test
@@ -115,6 +140,37 @@ class SlackServiceTest {
         //then
         assertThat(isGreeting1).isTrue();
         assertThat(isGreeting2).isFalse();
+    }
+
+    @Test
+    @DisplayName("event의 유형이 app_mention일 때, 그에 맞는 payload를 담아야 한다.")
+    fun shouldContainBody_when_app_mention() {
+        //given
+        val eventValue = getEventValue(EventType.APP_MENTION.type, "안녕");
+
+        //when
+        val payload = slackService.getPayloadByType(eventValue);
+
+        //then
+        assertThat(payload).isEqualTo("{\"text\":\"HEY님 안녕하세요!\"}")
+    }
+
+    @Test
+    @DisplayName("메세지에 날씨라는 단어가 들어있으면 날씨에 대한 정보를 전달한다")
+    fun should() {
+        //given
+        val eventValue1 = getEventValue(EventType.APP_MENTION.type, "날씨")
+        val eventValue2 = getEventValue(EventType.APP_MENTION.type, "뭐해")
+        val text1 = eventValue1["text"]!!;
+        val text2 = eventValue2["text"]!!;
+
+        //when
+        val isAskingWeather1:Boolean = slackService.isWeatherAskingCondition(text1);
+        val isAskingWeather2:Boolean = slackService.isWeatherAskingCondition(text2);
+
+        //then
+        assertThat(isAskingWeather1).isTrue();
+        assertThat(isAskingWeather2).isFalse();
     }
     
     

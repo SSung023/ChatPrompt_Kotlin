@@ -9,4 +9,9 @@ enum class ErrorCode (val status: HttpStatus, val message: String){
     // SLACK ERR
     SLACK_MESSAGE_DONT_SEND
         (HttpStatus.BAD_REQUEST, "Slack에 메시지가 전송되지 않았습니다."),
+
+    // Open API ERR
+    API_SEND_FAILURE
+        (HttpStatus.BAD_REQUEST, "Open API 요청이 완료되지 않았습니다."),
+
 }

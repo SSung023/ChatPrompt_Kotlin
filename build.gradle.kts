@@ -33,6 +33,19 @@ dependencies {
     implementation("com.slack.api:bolt-servlet:1.30.0")
     implementation("com.slack.api:bolt-jetty:1.30.0")
 
+    // slack - kotlin extension
+    implementation("com.slack.api:slack-api-model-kotlin-extension:1.30.0")
+    implementation("com.slack.api:slack-api-client-kotlin-extension:1.30.0")
+
+    //webflux
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
+
+    //Gson
+    implementation("com.google.code.gson:gson:2.8.9")
+
+    // jackson configuration
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-hibernate5-jakarta")
+
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("org.mariadb.jdbc:mariadb-java-client")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
@@ -40,13 +53,13 @@ dependencies {
 }
 
 allOpen {
-    annotation("javax.persistence.Entity")
-    annotation("javax.persistence.MappedSuperclass")
-    annotation("javax.persistence.Embeddable")
+    annotation("jakarta.persistence.Entity")
+    annotation("jakarta.persistence.MappedSuperclass")
+    annotation("jakarta.persistence.Embeddable")
 }
 
 noArg {
-    annotation("javax.persistence.Entity")
+    annotation("jakarta.persistence.Entity")
 }
 
 tasks.withType<KotlinCompile> {
