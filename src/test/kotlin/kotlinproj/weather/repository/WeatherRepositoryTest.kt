@@ -45,11 +45,9 @@ class WeatherRepositoryTest {
     @DisplayName("date와 time을 전달하면, 같은 date이면서 현재 시간보다 이후 시간대의 데이터를 반환한다.")
     fun should_return() {
         //given
-        val date = LocalDate.of(2023, 9, 1)
-        val time = LocalTime.of(8,12)
-        saveWeather("0900")
-        saveWeather("1000")
-        saveWeather("1100")
+        saveWeather("20230901","0900")
+        saveWeather("20230901","1000")
+        saveWeather("20230901","1100")
 
         //when
         val weatherList:List<Weather> = weatherRepository.getWeatherAfterDateTime("20230901","1000")
@@ -65,9 +63,9 @@ class WeatherRepositoryTest {
 
 
 
-    private fun saveWeather(fcstTime:String) : Weather{
+    private fun saveWeather(fcstDate: String, fcstTime:String) : Weather{
         val publishDate = DateInfo(
-            fcstDate = "20230828", baseTime = "0200")
+            fcstDate = fcstDate, baseTime = "0200")
         val weather = Weather(publishDate,
             forecastTime = fcstTime, temperature = 23.0, humidity = 60,
             rainPossible = 30, rainAmt = "1.2", skyState = "1")

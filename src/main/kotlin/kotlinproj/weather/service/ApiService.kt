@@ -9,6 +9,7 @@ import kotlinproj.weather.domain.Weather
 import kotlinproj.weather.dto.WeatherInfoDto
 import kotlinproj.weather.dto.kma.Item
 import kotlinproj.weather.dto.kma.Response
+import kotlinproj.weather.util.WeatherUtil
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -16,7 +17,6 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.util.DefaultUriBuilderFactory
 import org.springframework.web.util.UriBuilder
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
@@ -30,6 +30,7 @@ class ApiService (
     private val webBuilder: WebClient.Builder,
     private val weatherService: WeatherService,
     private val dateInfoService: DateInfoService,
+    private val weatherUtil: WeatherUtil
 ) {
     @Value("\${kma.callback-url}")
     lateinit var BASE_URL:String;
@@ -61,8 +62,8 @@ class ApiService (
                     .queryParam("serviceKey", SERVICE_KEY)
                     .queryParam("numOfRows", numOfRaws)
                     .queryParam("dataType", Constants.DATA_TYPE)
-                    .queryParam("base_date", getBaseDate(LocalDate.now()))
-                    .queryParam("base_time", getBaseTime(curTime))
+                    .queryParam("base_date", weatherUtil.getBaseDate(LocalDate.now()))
+                    .queryParam("base_time", weatherUtil.getBaseTime(curTime))
                     .queryParam("nx", 120)
                     .queryParam("ny", 60)
                     .build()
@@ -115,63 +116,14 @@ class ApiService (
             itemList.add(item)
         }
         weatherList.add(addRelationToWeather(itemList, dateInfo))
-        return weatherService.saveWeatherInfo(weatherList)
+        return weatherService.saveAll(weatherList)
     }
     private fun addRelationToWeather(itemList: List<Item>, dateInfo: DateInfo): Weather {
         return weatherService.convertToWeatherEntity(itemList, dateInfo)
     }
 
-    /**
-     * 요청 시간대에 맞춰서
-     */
-    fun loadWeather(date: LocalDate, time: LocalTime): List<WeatherInfoDto> {
-        val dateStr = getBaseDate(date)
-        val timeStr = getBaseTime(time)
-
-        val r :List<WeatherInfoDto> = listOf()
-
-        return r
-    }
 
 
-
-    /**
-     * request url에 들어갈 base_date를 구함
-     * -> 현재의 날짜를 yyyyMMdd 형식으로 바꾸는 코드
-     */
-    fun getBaseDate(curDate: LocalDate): String {
-        val formatter = DateTimeFormatter.ofPattern("yyyyMMdd")
-        return curDate.format(formatter);
-    }
-
-    /**
-     * request url에 들어갈 base_time을 구함
-     * -> 현재 시간에서 30분을 뺀 후, 범위에 맞는 base_time을 구한 후 반환
-     */
-    fun getBaseTime(curTime:LocalTime): String {
-        val hours = curTime.hour;
-        val minutes = curTime.minute;
-        var convertedHour = "";
-
-        if (minutes < 30) {
-            convertedHour = (hours - 1).toString() + "00";
-        }else{
-            convertedHour = hours.toString() + "00";
-        }
-
-        return when(convertedHour){
-            "200", "300", "400" -> "0200";
-            "500", "600", "700" -> "0500";
-            "800", "900", "1000" -> "0800";
-            "1100", "1200", "1300" -> "1100";
-            "1400", "1500", "1600" -> "1400";
-            "1700", "1800", "1900" -> "1700";
-            "2000", "2100", "2200"-> "2000";
-            "2300", "2400", "000", "0000", "100"-> "2300";
-
-            else -> {"0000"}
-        }
-    }
 
     /**
      * DB에서 날씨 정보를 찾을 시작 시간대를 반환

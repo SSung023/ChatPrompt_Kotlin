@@ -1,6 +1,5 @@
 package kotlinproj.weather.service
 
-import kotlinproj.Util.log.Logger
 import kotlinproj.weather.constant.SkyCode
 import kotlinproj.weather.constant.WeatherCode
 import kotlinproj.weather.domain.DateInfo
@@ -14,6 +13,8 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
+import java.time.LocalTime
 
 @SpringBootTest
 @Transactional
@@ -37,7 +38,7 @@ class WeatherServiceTest() {
     }
 
     @Test
-    @DisplayName("기상청 API를 통해 가지고 온 데이터 12개를 weatherInfoDTO로 변환할 수 있다.")
+    @DisplayName("기상청 API를 통해 가지고 온 데이터 12개를 바로 weatherInfoDTO로 변환할 수 있다.")
     fun convertTo_WeatherInfoDTO() {
         //given
         val weatherResponse:List<Item> = getItems();
@@ -52,7 +53,21 @@ class WeatherServiceTest() {
         assertThat(weatherDto.rainAmount).isEqualTo("강수없음");
         assertThat(weatherDto.sky).isEqualTo(SkyCode.SUNNY.description);
     }
-    
+
+    @Test
+    @DisplayName("Weather 엔티티를 weatherInfoDto로 변환할 수 있다.")
+    fun canConvert_Weather_To_WeatherInfoDto() {
+        //given
+        val weather = saveWeather("0900")
+
+        //when
+        val weatherDto = weatherService.convertToWeatherDto(weather)
+
+        //then
+        assertThat(weatherDto.temp).isEqualTo("23.4")
+    }
+
+
     @Test
     @DisplayName("List<Item>을 전달했을 때, Weather 엔티티로 변환이 가능하다.")
     fun canConvertTo_WeatherEntity() {
@@ -75,6 +90,7 @@ class WeatherServiceTest() {
         assertThat(weather.temperature).isEqualTo(associated[WeatherCode.TMP.name]?.fcstValue?.toDouble())
         assertThat(weather.skyState).isEqualTo(skyState)
     }
+
     @Test
     @DisplayName("List<Item>에 TMX 혹은 TMN 값이 있다면 dateInfo에 할당해준다.")
     fun assignTempInfo_When_Exist() {
@@ -91,6 +107,25 @@ class WeatherServiceTest() {
         //then
         assertThat(dateInfo.maxTemp).isEqualTo(associated["TMX"]?.fcstValue?.toDouble())
         assertThat(dateInfo.minTemp).isEqualTo(associated["TMN"]?.fcstValue?.toDouble())
+    }
+
+
+    @Test
+    @DisplayName("DB에 존재하는 날씨 데이터들 중, 요청 시간대 이후의 날씨 데이터들을 불러올 수 있다.")
+    fun load_weatherInfo_after_requestTime() {
+        //given
+        saveWeather("0900");
+        saveWeather("1000");
+        saveWeather("1100");
+
+        //when
+        val weatherList:List<WeatherInfoDto> = weatherService.loadWeather(
+            LocalDate.of(2023,9,1),
+            LocalTime.of(8,5)
+        )
+
+        //then
+        assertThat(weatherList.size).isEqualTo(0)
     }
 
 
@@ -132,6 +167,26 @@ class WeatherServiceTest() {
         return dateInfoRepository.save(
             DateInfo("20230829", "0200", 28.0, 21.0)
         );
+    }
+
+    private fun saveWeather(forecastTime: String): Weather{
+        val dateInfo = DateInfo(
+            fcstDate = "20230901",
+            baseTime = "20230901"
+        )
+        val savedDate = dateInfoRepository.save(dateInfo)
+
+        return weatherService.saveOne(
+            Weather(
+                savedDate,
+                forecastTime = forecastTime,
+                temperature = 23.4,
+                humidity = 56,
+                rainPossible = 30,
+                rainAmt = "0",
+                skyState = "맑음"
+            )
+        )
     }
 
 }

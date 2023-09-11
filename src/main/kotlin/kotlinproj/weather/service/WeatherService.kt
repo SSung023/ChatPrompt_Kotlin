@@ -9,8 +9,11 @@ import kotlinproj.weather.domain.Weather
 import kotlinproj.weather.dto.WeatherInfoDto
 import kotlinproj.weather.dto.kma.Item
 import kotlinproj.weather.repository.WeatherRepository
+import kotlinproj.weather.util.WeatherUtil
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
+import java.time.LocalTime
 
 
 /**
@@ -21,14 +24,15 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 @Transactional(readOnly = true)
 class WeatherService(
-    private val weatherRepository: WeatherRepository
+    private val weatherRepository: WeatherRepository,
+    private val weatherUtil: WeatherUtil
 ){
 
     /**
      * Open API를 통해 불러온 기상청 정보를 DB에 저장
      */
     @Transactional
-    fun saveWeatherInfo(weatherList: List<Weather>): List<Weather>{
+    fun saveAll(weatherList: List<Weather>): List<Weather>{
         return weatherRepository.saveAll(weatherList)
     }
 
@@ -37,7 +41,33 @@ class WeatherService(
         return weatherRepository.save(weather)
     }
 
+    /**
+     * 요청 시간대에 맞춰서 해당 날짜에 있는 날씨 데이터들을 전달
+     */
+    fun loadWeather(date: LocalDate, time: LocalTime): List<WeatherInfoDto> {
+        val dateStr = weatherUtil.getBaseDate(date)
+        val timeStr = weatherUtil.getBaseTime(time)
 
+        val weatherList = weatherRepository.getWeatherAfterDateTime(dateStr, timeStr)
+        return weatherList.map {
+            convertToWeatherDto(it)
+        }
+    }
+
+
+    /**
+     * @param weather DTO로 변환하고자 하는 entity
+     * 단일 weather 엔티티를 DTO로 변환
+     */
+    fun convertToWeatherDto(weather: Weather): WeatherInfoDto {
+        return WeatherInfoDto(
+            temp = weather.temperature.toString(),
+            humidity = weather.humidity.toString(),
+            rainPossibility = weather.rainPossibility.toString(),
+            rainAmount = weather.rainAmt,
+            sky = weather.skyState
+        )
+    }
     /**
      * @param resList numOfRows를 12로 설정하면 1시간동안의 날씨 정보를 배열로 받을 수 있음
      * 정보들을 모아서 WeatherInfoDto로 만들어서 반환
@@ -57,6 +87,7 @@ class WeatherService(
             sky = getSkyState(skyCodeNum)
         );
     }
+
 
     /**
      * 1시간 동안의 날씨를 전달받아서 Weather 엔티티로 변환
@@ -91,6 +122,8 @@ class WeatherService(
         }?.description
             ?: throw BusinessException(ErrorCode.DATA_ERROR_NOT_FOUND);
     }
+
+
 
 
 }

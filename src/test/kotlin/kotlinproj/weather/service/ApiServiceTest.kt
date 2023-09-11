@@ -1,8 +1,5 @@
 package kotlinproj.weather.service
 
-import kotlinproj.weather.domain.DateInfo
-import kotlinproj.weather.domain.Weather
-import kotlinproj.weather.dto.WeatherInfoDto
 import kotlinproj.weather.dto.kma.Item
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
@@ -11,15 +8,12 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.transaction.annotation.Transactional
-import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.LocalTime
 
 @SpringBootTest
 @Transactional
 class ApiServiceTest {
-    @Autowired private lateinit var apiService: ApiService
-    @Autowired lateinit var weatherService: WeatherService
+    @Autowired lateinit var apiService: ApiService
 
     @Test
     @DisplayName("callback url로 요청을 했을 때 성공 코드(00)이 와야 한다.")
@@ -33,38 +27,6 @@ class ApiServiceTest {
         val resCode = searchWeather.response.header.resultCode;
         assertThat(resCode).isEqualTo("00");
         Assertions.assertThatNoException();
-    }
-
-    @Test
-    @DisplayName("현재의 시간을 yyyymmdd 형태로 변환할 수 있다.")
-    fun canConvert_To_CertainFormat() {
-        //given
-        val curDate = LocalDate.of(2023,9,1)
-        val curTime = LocalDateTime.now().toString();
-        val dateArr = curTime.split("-", "T");
-        var expected = "";
-        for (i in 0..2){
-            expected += dateArr[i];
-        }
-
-        //when
-        val formattedDate = apiService.getBaseDate(curDate);
-
-        //then
-        assertThat(formattedDate).isEqualTo("20230901")
-    }
-
-    @Test
-    @DisplayName("시간에 맞춰서 base_time request param을 설정할 수 있다.")
-    fun setParam_By_CurTime() {
-        //given
-        val curTime:LocalTime = LocalTime.of(10, 30, 9);
-
-        //when
-        val formattedTime = apiService.getBaseTime(curTime);
-
-        //then
-        assertThat(formattedTime).isEqualTo("0800");
     }
 
     @Test
@@ -105,24 +67,6 @@ class ApiServiceTest {
 
         //then
         assertThat(fcstTime).isEqualTo("0000")
-    }
-    
-    @Test
-    @DisplayName("DB에 존재하는 날씨 데이터들 중, 요청 시간대 이후의 날씨 데이터들을 불러올 수 있다.")
-    fun load_weatherInfo_after_requestTime() {
-        //given
-        saveWeather("0900");
-        saveWeather("1000");
-        saveWeather("1100");
-        val time = LocalTime.of(8,5)
-        
-        //when
-        val weatherList:List<WeatherInfoDto> = apiService.loadWeather(
-            LocalDate.of(2023,9,1), time
-        );
-        
-        //then
-        assertThat(weatherList.size).isEqualTo(3)
     }
     
     
@@ -188,21 +132,5 @@ class ApiServiceTest {
         );
     }
 
-    private fun saveWeather(forecastTime: String): Weather{
-        val dateInfo = DateInfo(
-            fcstDate = "20230901",
-            baseTime = "20230901"
-        )
-        return weatherService.saveOne(
-            Weather(
-                dateInfo,
-                forecastTime = forecastTime,
-                temperature = 23.4,
-                humidity = 56,
-                rainPossible = 30,
-                rainAmt = "0",
-                skyState = "맑음"
-            )
-        )
-    }
+
 }
