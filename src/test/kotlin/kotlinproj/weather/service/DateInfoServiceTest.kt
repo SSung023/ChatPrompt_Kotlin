@@ -25,7 +25,11 @@ class DateInfoServiceTest {
         val saveOne = dateInfoService.saveOne(dateInfo)
 
         //then
-        assertThat(saveOne.id).isEqualTo(1L);
+        assertThat(saveOne.id).isNotEqualTo(0L)
+        assertThat(saveOne.fcstDate).isEqualTo("20230829")
+        assertThat(saveOne.baseTime).isEqualTo("0200")
+        assertThat(saveOne.maxTemp).isEqualTo(28.9)
+        assertThat(saveOne.minTemp).isEqualTo(23.2)
     }
 
     @Test
@@ -38,7 +42,7 @@ class DateInfoServiceTest {
         val saved:DateInfo = dateInfoService.getDateInfoEntity(dateInfo, 27.3, 21.6);
 
         //then
-        assertThat(saved.id).isEqualTo(1);
+        assertThat(saved.id).isNotEqualTo(0L);
         assertThat(saved.fcstDate).isEqualTo("20230829")
         assertThat(saved.baseTime).isEqualTo("0200")
         assertThat(saved.maxTemp).isEqualTo(27.3)

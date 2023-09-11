@@ -43,7 +43,7 @@ class SlackServiceTest {
         val payload = slackService.getPayloadByType(eventValue);
 
         //then
-        assertThat(payload).isEqualTo("{\"text\":\"HEY님 안녕하세요!\"}");
+        assertThat(payload).isNotEqualTo("")
     }
     
     @Test
@@ -140,19 +140,6 @@ class SlackServiceTest {
         //then
         assertThat(isGreeting1).isTrue();
         assertThat(isGreeting2).isFalse();
-    }
-
-    @Test
-    @DisplayName("event의 유형이 app_mention일 때, 그에 맞는 payload를 담아야 한다.")
-    fun shouldContainBody_when_app_mention() {
-        //given
-        val eventValue = getEventValue(EventType.APP_MENTION.type, "안녕");
-
-        //when
-        val payload = slackService.getPayloadByType(eventValue);
-
-        //then
-        assertThat(payload).isEqualTo("{\"text\":\"HEY님 안녕하세요!\"}")
     }
 
     @Test

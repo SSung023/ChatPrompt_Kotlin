@@ -47,8 +47,8 @@ class WeatherServiceTest() {
         val weatherDto:WeatherInfoDto = weatherService.convertToWeatherDto(weatherResponse);
 
         //then
-        assertThat(weatherDto.temp).isEqualTo("25.8");
-        assertThat(weatherDto.humidity).isEqualTo("78");
+        assertThat(weatherDto.temp).isEqualTo(25.8);
+        assertThat(weatherDto.humidity).isEqualTo(78);
         assertThat(weatherDto.rainPossibility).isEqualTo("0");
         assertThat(weatherDto.rainAmount).isEqualTo("강수없음");
         assertThat(weatherDto.sky).isEqualTo(SkyCode.SUNNY.description);
@@ -64,7 +64,7 @@ class WeatherServiceTest() {
         val weatherDto = weatherService.convertToWeatherDto(weather)
 
         //then
-        assertThat(weatherDto.temp).isEqualTo("23.4")
+        assertThat(weatherDto.temp).isEqualTo(23.4)
     }
 
 
@@ -102,11 +102,11 @@ class WeatherServiceTest() {
         }
 
         //when
-        weatherService.convertToWeatherEntity(itemList, dateInfo)
+        val weatherEntity = weatherService.convertToWeatherEntity(itemList, dateInfo)
 
         //then
-        assertThat(dateInfo.maxTemp).isEqualTo(associated["TMX"]?.fcstValue?.toDouble())
-        assertThat(dateInfo.minTemp).isEqualTo(associated["TMN"]?.fcstValue?.toDouble())
+        assertThat(weatherEntity.dateInfo.maxTemp).isEqualTo(associated["TMX"]?.fcstValue?.toDouble())
+        assertThat(weatherEntity.dateInfo.minTemp).isEqualTo(associated["TMN"]?.fcstValue?.toDouble())
     }
 
 
@@ -125,7 +125,7 @@ class WeatherServiceTest() {
         )
 
         //then
-        assertThat(weatherList.size).isEqualTo(0)
+        assertThat(weatherList.size).isEqualTo(3)
     }
 
 

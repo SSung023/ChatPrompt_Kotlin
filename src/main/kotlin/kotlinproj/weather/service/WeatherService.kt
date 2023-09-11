@@ -61,9 +61,9 @@ class WeatherService(
      */
     fun convertToWeatherDto(weather: Weather): WeatherInfoDto {
         return WeatherInfoDto(
-            temp = weather.temperature.toString(),
-            humidity = weather.humidity.toString(),
-            rainPossibility = weather.rainPossibility.toString(),
+            temp = weather.temperature,
+            humidity = weather.humidity,
+            rainPossibility = weather.rainPossibility,
             rainAmount = weather.rainAmt,
             sky = weather.skyState
         )
@@ -80,9 +80,9 @@ class WeatherService(
             ?: 0;
 
         return WeatherInfoDto(
-            temp = associated[WeatherCode.TMP.name]?.fcstValue,
-            humidity = associated[WeatherCode.REH.name]?.fcstValue,
-            rainPossibility = associated[WeatherCode.POP.name]?.fcstValue,
+            temp = associated[WeatherCode.TMP.name]?.fcstValue?.toDouble(),
+            humidity = associated[WeatherCode.REH.name]?.fcstValue?.toInt(),
+            rainPossibility = associated[WeatherCode.POP.name]?.fcstValue?.toInt(),
             rainAmount = associated[WeatherCode.PCP.name]?.fcstValue,
             sky = getSkyState(skyCodeNum)
         );
@@ -94,12 +94,16 @@ class WeatherService(
      * @param itemList 1시간동안의 날씨 정보
      * @param dateInfo Weather 엔티티의 연관관계 설정을 위한 param
      */
+    @Transactional
     fun convertToWeatherEntity(itemList: List<Item>, dateInfo: DateInfo): Weather {
         val associated = itemList.associateBy {
             it.category
         }
         val skyCode = associated[WeatherCode.SKY.name]?.fcstValue?.toInt()
             ?: 0;
+
+        dateInfo.updateMaxTemp(associated[WeatherCode.TMX.name]?.fcstValue?.toDouble())
+        dateInfo.updateMinTemp(associated[WeatherCode.TMN.name]?.fcstValue?.toDouble())
 
         return Weather(
             dateInfo = dateInfo,

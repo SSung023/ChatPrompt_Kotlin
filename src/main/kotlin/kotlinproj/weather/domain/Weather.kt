@@ -32,6 +32,7 @@ class Weather(
     var skyState:String = skyState // 하늘 상태
         protected set
 
+
     //=== 연관관계 편의 메서드 ===//
     fun addDateInfo(dateInfo: DateInfo) {
         this.dateInfo = dateInfo;

@@ -1,5 +1,6 @@
 package kotlinproj.weather.repository
 
+import kotlinproj.weather.constant.SkyCode
 import kotlinproj.weather.domain.DateInfo
 import kotlinproj.weather.domain.Weather
 import org.assertj.core.api.Assertions.assertThat
@@ -10,12 +11,14 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.test.context.junit.jupiter.SpringExtension
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 import java.time.LocalTime
 
 @DataJpaTest(showSql = true)
 @ExtendWith(SpringExtension::class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Transactional
 class WeatherRepositoryTest {
     @Autowired
     private lateinit var weatherRepository: WeatherRepository
@@ -31,14 +34,22 @@ class WeatherRepositoryTest {
             fcstDate = "20230828", baseTime = "0200")
         val weather = Weather(publishDate,
             forecastTime = "0300", temperature = 23.0, humidity = 60,
-            rainPossible = 30, rainAmt = "1.2", skyState = "1")
+            rainPossible = 30, rainAmt = "1.2", skyState = "맑음")
 
         //when
         dateInfoRepository.save(publishDate)
         val save = weatherRepository.save(weather)
 
         //then
-        assertThat(save.id).isEqualTo(1L)
+        assertThat(save.id).isNotEqualTo(0L)
+        assertThat(save.dateInfo.fcstDate).isEqualTo("20230828")
+        assertThat(save.dateInfo.baseTime).isEqualTo("0200")
+        assertThat(save.forecastTime).isEqualTo("0300")
+        assertThat(save.temperature).isEqualTo(23.0)
+        assertThat(save.humidity).isEqualTo(60)
+        assertThat(save.rainPossibility).isEqualTo(30)
+        assertThat(save.rainAmt).isEqualTo("1.2")
+        assertThat(save.skyState).isEqualTo(SkyCode.SUNNY.description)
     }
 
     @Test
