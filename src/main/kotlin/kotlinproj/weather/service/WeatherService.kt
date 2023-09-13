@@ -25,6 +25,7 @@ import java.time.LocalTime
 @Transactional(readOnly = true)
 class WeatherService(
     private val weatherRepository: WeatherRepository,
+    private val apiService: ApiService,
     private val weatherUtil: WeatherUtil
 ){
 
@@ -42,16 +43,13 @@ class WeatherService(
     }
 
     /**
-     * 요청 시간대에 맞춰서 해당 날짜에 있는 날씨 데이터들을 전달
+     * fcstDate에 해당하는 날씨 데이터 정보를 반환
      */
-    fun loadWeather(date: LocalDate, time: LocalTime): List<WeatherInfoDto> {
+    fun loadWeather(date: LocalDate, time: LocalTime): List<Weather> {
         val dateStr = weatherUtil.getBaseDate(date)
         val timeStr = weatherUtil.getBaseTime(time)
 
-        val weatherList = weatherRepository.getWeatherAfterDateTime(dateStr, timeStr)
-        return weatherList.map {
-            convertToWeatherDto(it)
-        }
+        return weatherRepository.getWeatherAfterDateTime(dateStr, timeStr)
     }
 
 

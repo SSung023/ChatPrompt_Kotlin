@@ -1,12 +1,8 @@
 package kotlinproj.slack.controller
 
-import com.slack.api.util.json.GsonFactory
 import kotlinproj.Util.exception.BusinessException
 import kotlinproj.Util.exception.constants.ErrorCode
-import kotlinproj.Util.log.Logger
-import kotlinproj.slack.dto.BlockPayload
 import kotlinproj.slack.dto.ValidDto
-import kotlinproj.slack.dto.ValueData
 import kotlinproj.slack.service.SlackService
 import kotlinproj.weather.service.ApiService
 import org.springframework.http.MediaType
@@ -46,14 +42,7 @@ class SlackController(private val slackService: SlackService,
         consumes = arrayOf(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     )
     fun action(@RequestParam payload: String) {
-        val fromJson: BlockPayload = GsonFactory.createSnakeCase()
-            .fromJson(payload, BlockPayload::class.java)
-
-        val values: List<Map<String, ValueData>> = fromJson.state.values.values.toList()
-        val date = values[0]["+kP"]?.selected_date
-        val time = values[0]["=DLz"]?.selected_time
-
-
+        slackService.getDateTimeFromBlockKit(payload)
     }
 }
 

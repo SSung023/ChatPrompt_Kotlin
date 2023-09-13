@@ -6,7 +6,6 @@ import kotlinproj.weather.constant.Constants
 import kotlinproj.weather.constant.WeatherCode
 import kotlinproj.weather.domain.DateInfo
 import kotlinproj.weather.domain.Weather
-import kotlinproj.weather.dto.WeatherInfoDto
 import kotlinproj.weather.dto.kma.Item
 import kotlinproj.weather.dto.kma.Response
 import kotlinproj.weather.util.WeatherUtil
@@ -18,7 +17,6 @@ import org.springframework.web.util.DefaultUriBuilderFactory
 import org.springframework.web.util.UriBuilder
 import java.time.LocalDate
 import java.time.LocalTime
-import java.time.format.DateTimeFormatter
 
 /**
  * @author HeeYeon

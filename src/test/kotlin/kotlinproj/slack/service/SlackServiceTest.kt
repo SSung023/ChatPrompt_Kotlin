@@ -1,11 +1,9 @@
 package kotlinproj.slack.service
 
 import com.slack.api.model.block.LayoutBlock
-import com.slack.api.util.json.GsonFactory
 import kotlinproj.Util.exception.BusinessException
 import kotlinproj.Util.log.Logger
 import kotlinproj.slack.constant.EventType
-import kotlinproj.slack.dto.BlockPayload
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
@@ -159,6 +157,43 @@ class SlackServiceTest {
         assertThat(isAskingWeather1).isTrue();
         assertThat(isAskingWeather2).isFalse();
     }
+
+    @Test
+    @DisplayName("date/time picker 상호작용을 했을 때 date/time 정보를 추출할 수 있다.")
+    fun canGet_weatherInfo() {
+        //given
+
+        //when
+
+        //then
+    }
+
+    /**
+     * ApiService에서 WeatherService, DateInfoService를 의존하고 있음
+     * ApiService는 데이터를 저장하는데에 Weather, DateInfoService를 사용하는 것
+     * Slack을 통해서 요청을 받기 때문에 총괄하는 서비스는 SlackService로 두고,
+     * SlackService에서 필요할 때에 다른 Service들을 호출하는 것
+     */
+    @Test
+    @DisplayName("현재보다 이후의 날씨 데이터가 없을 때 api를 호출하여 날씨 데이터를 받아온다.")
+    fun getWeatherInfo_when_DataDontExist() {
+        //given
+        val payload = "{\"type\":\"block_actions\",\"user\":{\"id\":\"U05MVCYDKJL\",\"username\":\"adrians7206\",\"name\":\"adrians7206\",\"team_id\":\"T05M85AHW68\"},\"api_app_id\":\"A05MPS568QL\",\"token\":\"stG1dx0Mux3RzPSH2kAPXftX\",\"container\":{\"type\":\"message\",\"message_ts\":\"1694410721.729709\",\"channel_id\":\"C05N03Y8XL1\",\"is_ephemeral\":false},\"trigger_id\":\"5868638938550.5722180608212.db86ed658e60fda4f28197b9efe0e845\",\"team\":{\"id\":\"T05M85AHW68\",\"domain\":\"heys-workspace\"},\"enterprise\":null,\"is_enterprise_install\":false,\"channel\":{\"id\":\"C05N03Y8XL1\",\"name\":\"\\uc624\\ub298-\\ub0a0\\uc528-\\uc5b4\\ub54c\"},\"message\":{\"type\":\"message\",\"subtype\":\"bot_message\",\"text\":\":sloth: *\\ub098\\ubb34\\ub298\\ubd07* \\uc5d0\\uac8c \\ub0a0\\uc528\\ub97c \\ubb3c\\uc5b4\\ubcf4\\uc138\\uc694! \\n \\ub0a0\\uc528\\ub97c \\uc54c\\uace0 \\uc2f6\\uc740 *\\ub0a0\\uc9dc* \\uc640 *\\uc2dc\\uac04* \\uc744 \\uace8\\ub77c\\uc8fc\\uc138\\uc694! \\ub0a0\\uc528 \\uc815\\ubcf4\\ub294 \\ud55c \\uc2dc\\uac04 \\ub2e8\\uc704\\ub85c \\ub098\\ub220\\uc11c \\uc54c\\ub824\\ub4dc\\ub824\\uc694. :slightly_smiling_face: Click me button, with interactive elements\",\"ts\":\"1694410721.729709\",\"bot_id\":\"B05N4B0D1GD\",\"blocks\":[{\"type\":\"section\",\"block_id\":\"HFSUR\",\"text\":{\"type\":\"mrkdwn\",\"text\":\":sloth: *\\ub098\\ubb34\\ub298\\ubd07* \\uc5d0\\uac8c \\ub0a0\\uc528\\ub97c \\ubb3c\\uc5b4\\ubcf4\\uc138\\uc694! \\n \\ub0a0\\uc528\\ub97c \\uc54c\\uace0 \\uc2f6\\uc740 *\\ub0a0\\uc9dc* \\uc640 *\\uc2dc\\uac04* \\uc744 \\uace8\\ub77c\\uc8fc\\uc138\\uc694! \\ub0a0\\uc528 \\uc815\\ubcf4\\ub294 \\ud55c \\uc2dc\\uac04 \\ub2e8\\uc704\\ub85c \\ub098\\ub220\\uc11c \\uc54c\\ub824\\ub4dc\\ub824\\uc694. :slightly_smiling_face:\",\"verbatim\":false}},{\"type\":\"actions\",\"block_id\":\"Blpk\",\"elements\":[{\"type\":\"datepicker\",\"action_id\":\"q=klh\",\"initial_date\":\"2023-09-11\",\"placeholder\":{\"type\":\"plain_text\",\"text\":\"Select a date :date:\",\"emoji\":true}},{\"type\":\"timepicker\",\"action_id\":\"1MoXn\",\"initial_time\":\"14:38\",\"placeholder\":{\"type\":\"plain_text\",\"text\":\"Select time :stopwatch:\",\"emoji\":true}},{\"type\":\"button\",\"action_id\":\"get-weather\",\"text\":{\"type\":\"plain_text\",\"text\":\"Click me\",\"emoji\":true}}]}]},\"state\":{\"values\":{\"Blpk\":{\"q=klh\":{\"type\":\"datepicker\",\"selected_date\":\"2023-09-11\"},\"1MoXn\":{\"type\":\"timepicker\",\"selected_time\":\"14:38\"}}}},\"response_url\":\"https:\\/\\/hooks.slack.com\\/actions\\/T05M85AHW68\\/5898270396256\\/0VzpKn6RjzugxArAJtBM3Gv0\",\"actions\":[{\"action_id\":\"get-weather\",\"block_id\":\"Blpk\",\"text\":{\"type\":\"plain_text\",\"text\":\"Click me\",\"emoji\":true},\"type\":\"button\",\"action_ts\":\"1694413091.207996\"}]}\n";
+
+        //when
+        val (date, time) = slackService.getDateTimeFromBlockKit(payload)
+
+        //then
+        assertThat(date).isEqualTo("2023-09-11")
+        assertThat(time).isEqualTo("14:38")
+    }
+
+
+
+
+
+
+
     
     
     

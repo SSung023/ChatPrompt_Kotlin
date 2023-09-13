@@ -49,7 +49,7 @@ class WeatherServiceTest() {
         //then
         assertThat(weatherDto.temp).isEqualTo(25.8);
         assertThat(weatherDto.humidity).isEqualTo(78);
-        assertThat(weatherDto.rainPossibility).isEqualTo("0");
+        assertThat(weatherDto.rainPossibility).isEqualTo(0);
         assertThat(weatherDto.rainAmount).isEqualTo("강수없음");
         assertThat(weatherDto.sky).isEqualTo(SkyCode.SUNNY.description);
     }
@@ -119,7 +119,7 @@ class WeatherServiceTest() {
         saveWeather("1100");
 
         //when
-        val weatherList:List<WeatherInfoDto> = weatherService.loadWeather(
+        val weatherList = weatherService.loadWeather(
             LocalDate.of(2023,9,1),
             LocalTime.of(8,5)
         )
@@ -127,6 +127,8 @@ class WeatherServiceTest() {
         //then
         assertThat(weatherList.size).isEqualTo(3)
     }
+
+
 
 
 

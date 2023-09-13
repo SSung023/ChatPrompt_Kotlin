@@ -4,12 +4,13 @@ import com.slack.api.Slack
 import com.slack.api.methods.request.users.UsersInfoRequest
 import com.slack.api.model.block.LayoutBlock
 import com.slack.api.model.kotlin_extension.block.withBlocks
+import com.slack.api.util.json.GsonFactory
 import com.slack.api.webhook.Payload
 import kotlinproj.Util.exception.BusinessException
 import kotlinproj.Util.exception.constants.ErrorCode
 import kotlinproj.Util.log.Logger
 import kotlinproj.slack.constant.EventType
-import kotlinproj.weather.service.ApiService
+import kotlinproj.slack.dto.BlockPayload
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -170,6 +171,29 @@ class SlackService {
                 }
             }
         }
+    }
+
+    /**
+     * Slack Block Kit의 DateTimePicker를 통해 날짜/시간 정보 선택 시 날짜 정보를 Pair 형식으로 추출
+     */
+    fun getDateTimeFromBlockKit(payload: String): Pair<String, String> {
+        val json: BlockPayload = GsonFactory.createSnakeCase()
+            .fromJson(payload, BlockPayload::class.java)
+
+        val blockKit = json.state.values.values.toList()[0].values.toList();
+        var date = ""
+        var time = ""
+        for (valueData in blockKit) {
+            when(valueData.type) {
+                "datepicker" -> {
+                    date = valueData.selected_date
+                }
+                "timepicker" -> {
+                    time = valueData.selected_time
+                }
+            }
+        }
+        return Pair(date, time)
     }
 
 }

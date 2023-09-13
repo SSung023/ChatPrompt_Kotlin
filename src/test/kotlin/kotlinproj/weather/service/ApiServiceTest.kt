@@ -68,7 +68,7 @@ class ApiServiceTest {
         //then
         assertThat(fcstTime).isEqualTo("0000")
     }
-    
+
     
     
     
